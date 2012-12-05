@@ -8,12 +8,10 @@ goog.require('lime.animation.ColorTo');
 backstab.Planet = function(params) {
   this.neighbors = [];
   this.id = params[1].value;
-  this.x = params[2];
-  this.y = params[3];
-  this.type = params[4].value;
-  this.userId = params[5].value;
-  this.quantity = params[6];
-  this.capacity = params[7];
+  this.type = params[2].value;
+  this.userId = params[3].value;
+  this.quantity = params[4];
+  this.capacity = params[5];
 };
 
 backstab.Planet.prototype.draw = function() {

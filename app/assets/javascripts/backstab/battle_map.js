@@ -3,6 +3,7 @@ goog.provide('backstab.BattleMap');
 goog.require('backstab.Planet');
 goog.require('backstab.Route');
 goog.require('backstab.Army');
+goog.require('springy');
 
 backstab.BattleMap = function(mapInfo, scene) {
   this.scene = scene;
@@ -11,9 +12,18 @@ backstab.BattleMap = function(mapInfo, scene) {
 
   this.createPlanets(mapInfo);
   this.createRoutes(mapInfo);
+  this.positionPlanets(this.planets, this.routes);
 };
 
 backstab.BattleMap.prototype.render = function(scene) {
+  if (this._positioningPlanets) {
+    setTimeout(goog.bind(this.render, this, scene), 50);
+  } else {
+    this._render(scene);
+  }
+};
+
+backstab.BattleMap.prototype._render = function(scene) {
   var scene = this.scene;
   this.routes.forEach(function(obj) {
     scene.appendChild(obj.draw());
@@ -45,6 +55,36 @@ backstab.BattleMap.prototype.createRoutes = function(mapInfo) {
     var route = new backstab.Route(from, to);
     this.routes.push(route);
   }, this));
+};
+
+backstab.BattleMap.prototype.positionPlanets = function(planets, routes) {
+  var graph = new Graph(),
+      planetNodes = [],
+      sourceNode, destNode;
+
+  planets.forEach(function(planet) {
+    planetNodes.push(graph.newNode(planet));
+  });
+  routes.forEach(function(route) {
+    sourceNode = planetNodes.filter(function(e){ return e.data.id === route.source.id })[0];
+    destNode = planetNodes.filter(function(e){ return e.data.id === route.dest.id })[0];
+    graph.newEdge(sourceNode, destNode);
+  });
+  var layout = new Layout.ForceDirected(graph, 400.0, 400.0, 0.5);
+  var currentBB = layout.getBoundingBox();
+  var self = this;
+  this._positioningPlanets = true;
+  layout.start(undefined, function() {
+    layout.eachNode(function(node, point) {
+      var size = currentBB.topright.subtract(currentBB.bottomleft);
+      var sx = point.p.subtract(currentBB.bottomleft).divide(size.x).x * self.scene.domElement.clientWidth;
+      var sy = point.p.subtract(currentBB.bottomleft).divide(size.y).y * self.scene.domElement.clientHeight;
+      node.data.x = sx;
+      node.data.y = sy;
+		})
+    self._positioningPlanets = false;
+    console.log("done");
+  });
 };
 
 backstab.BattleMap.prototype.planetById = function(id) {
