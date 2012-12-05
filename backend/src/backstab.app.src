@@ -1,0 +1,18 @@
+{application, backstab, [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {modules, [
+    backstab_app,
+    backstab_sup,
+    backstab_server
+  ]},
+  {applications, [
+    kernel,
+    stdlib
+  ]},
+  {mod, {
+    backstab_app, []
+  }},
+  {env, []}
+]}.
