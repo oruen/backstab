@@ -3,28 +3,30 @@
 -include("backstab.hrl").
 
 load(_MapId) ->
-    [{planets, [
-        #planet{id = <<"1">>, capacity = 30,
-                type = <<"ground">>, quantity = 10, user_id = <<"1">>},
-        #planet{id = <<"2">>, capacity = 40, type = <<"ground">>},
-        #planet{id = <<"3">>, capacity = 50,
-                type = <<"ground">>, quantity = 15, user_id = <<"2">>},
-        #planet{id = <<"4">>, capacity = 50, type = <<"ground">>}]},
-     {routes, [
-         #route{from = <<"1">>, to = <<"2">>},
-         #route{from = <<"1">>, to = <<"3">>},
-         #route{from = <<"2">>, to = <<"3">>},
-         #route{from = <<"3">>, to = <<"4">>}]}
-   ].
+  random().
 
 random() ->
   UserPlanets = [random_planet(<<"1">>),
                  random_planet(<<"1">>),
                  random_planet(<<"2">>),
                  random_planet(<<"2">>)],
-  PlanetsNum = random:uniform(10) + 8,
+  PlanetsNum = random:uniform(3) + 2,
   Planets = generate_planets(PlanetsNum),
-  [{planets, UserPlanets ++ Planets}].
+  Routes = generate_routes(Planets),
+  [{planets, UserPlanets ++ Planets}, {routes, Routes}].
+
+%% Routes generator
+
+generate_routes(Planets) ->
+  generate_routes(Planets, []).
+
+generate_routes([From , To | []], Acc) ->
+  [#route{from = From#planet.id, to = To#planet.id} | Acc];
+generate_routes([From , To | Planets], Acc) ->
+  generate_routes([To | Planets], [#route{from = From#planet.id, to = To#planet.id} | Acc]).
+
+
+%% Planets generator
 
 generate_planets(Num) ->
   generate_planets(Num, []).
@@ -39,7 +41,7 @@ random_planet() ->
   random_planet(UserId).
 
 random_planet(UserId) ->
-  Uid = uuid:to_string(uuid:v4()),
+  Uid = list_to_binary(uuid:to_string(uuid:v4())),
   Capacity = random:uniform(7) * 5 + 15,
   random_planet(UserId, Uid, Capacity).
 
