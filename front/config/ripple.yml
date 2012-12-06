@@ -1,7 +1,8 @@
 # Configure Riak connections for the Ripple library.
 development:
-  http_port: 8098
+  http_port: 8091
   pb_port: 8087
+  protocol: pbc
   host: 127.0.0.1
   source: /usr/local/bin  #Default for Homebrew.
 
@@ -23,3 +24,4 @@ production:
   http_port: 8098
   pb_port: 8087
   host: 127.0.0.1
+  protocol: pbc
