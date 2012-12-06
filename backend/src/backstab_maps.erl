@@ -1,5 +1,5 @@
 -module(backstab_maps).
--export([load/1, random/0, create_random/1]).
+-export([load/1, random/0, create_random/1, to_front/1]).
 -include("backstab.hrl").
 
 load(_MapId) ->
@@ -12,7 +12,8 @@ create_random(Num) ->
 create_random(_Store, 0) ->
   ok;
 create_random(Store, Num) ->
-  Object = riakc_obj:new(<<"maps">>, uuid:v4(), bert:encode(random())),
+  Id = list_to_binary(uuid:to_string(uuid:v4())),
+  Object = riakc_obj:new(<<"maps">>, Id, bert:encode(#planet_system{user_id = undefined, map = to_front(random()), id = Id})),
   riakc_pb_socket:put(Store, Object),
   create_random(Num - 1).
 
