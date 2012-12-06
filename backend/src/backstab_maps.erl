@@ -18,13 +18,8 @@ create_random(Store, Num) ->
 
 random() ->
   Map = digraph:new(),
-  UserPlanets = [random_planet(<<"1">>),
-                 random_planet(<<"1">>),
-                 random_planet(<<"2">>),
-                 random_planet(<<"2">>)],
-  PlanetsNum = random:uniform(3) + 2,
+  PlanetsNum = random:uniform(?PLANETS_NUM_RAND_MAX) + ?PLANETS_NUM_FIX,
   Planets = generate_planets(PlanetsNum),
-  [digraph:add_vertex(Map, P) || P <- UserPlanets],
   [digraph:add_vertex(Map, P) || P <- Planets],
   generate_routes(Map),
   Map.
@@ -32,7 +27,7 @@ random() ->
 %% Map
 
 to_front(Map) ->
-  Routes = [to_route(Map, E) ||E <- digraph:edges(Map)],
+  Routes = [to_route(Map, E) || E <- digraph:edges(Map)],
   [{planets, digraph:vertices(Map)}, {routes, Routes}].
 
 to_route(Map, Edge) ->
@@ -53,7 +48,7 @@ generate_routes([From , To | Planets], AllPlanets, Map) ->
 
 generate_routes_for(From, To, Planets, Map) ->
   add_route(From, To, Map),
-  random_routes(From, random:uniform(2), Planets, Map).
+  random_routes(From, random:uniform(?ROUTES_MAX_COUNT - 1), Planets, Map).
 
 random_routes(_From, 0, _Planets, _Map) ->
   ok;
@@ -83,13 +78,13 @@ random_planet() ->
 
 random_planet(UserId) ->
   Uid = list_to_binary(uuid:to_string(uuid:v4())),
-  Capacity = random:uniform(7) * 5 + 15,
+  Capacity = random:uniform(?PLANET_MAX_CAPACITY_FACTOR) * ?PLANET_CAPACITY_FACTOR + ?PLANET_CAPACITY_CONST,
   random_planet(UserId, Uid, Capacity).
 
 random_planet(undefined, Uid, Capacity) ->
   #planet{id = Uid, capacity = Capacity, type = <<"ground">>};
 random_planet(UserId, Uid, Capacity) ->
-  Quantity = random:uniform(3) * 5,
+  Quantity = random:uniform(?PLANET_MAX_QUANTITY_FACTOR) * ?PLANET_QUANTITY_FACTOR,
   #planet{id = Uid, capacity = Capacity, type = <<"ground">>, user_id = UserId, quantity = Quantity}.
 
 random_user() ->
