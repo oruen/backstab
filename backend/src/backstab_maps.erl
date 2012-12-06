@@ -17,6 +17,7 @@ random() ->
   [digraph:add_vertex(Map, P) || P <- Planets],
   generate_routes(Map),
   to_front(Map).
+  %Map.
 
 %% Map
 
@@ -26,7 +27,7 @@ to_front(Map) ->
 
 to_route(Map, Edge) ->
   {_, Source, Dest, _} = digraph:edge(Map, Edge),
-  #route{from = Source#planet.id, to=Source#planet.id}.
+  #route{from = Source#planet.id, to=Dest#planet.id}.
 
 %% Routes generator
 
@@ -35,13 +36,26 @@ generate_routes(Map) ->
   generate_routes(Planets, Planets, Map).
 
 generate_routes([From , To | []], AllPlanets, Map) ->
-  digraph:add_edge(Map, From, To),
-  Map;
+  generate_routes_for(From, To, lists:subtract(AllPlanets, [From, To]), Map);
 generate_routes([From , To | Planets], AllPlanets, Map) ->
-  %RandomRoutes = random_route(AllPlanets, [From, To]),
-  digraph:add_edge(Map, From, To),
+  generate_routes_for(From, To, lists:subtract(AllPlanets, [From, To]), Map),
   generate_routes([To | Planets], AllPlanets, Map).
 
+generate_routes_for(From, To, Planets, Map) ->
+  add_route(From, To, Map),
+  random_routes(From, random:uniform(2), Planets, Map).
+
+random_routes(_From, 0, _Planets, _Map) ->
+  ok;
+random_routes(From, Count, Planets, Map) ->
+  add_route(From, lists:nth(random:uniform(length(Planets)), Planets), Map),
+  random_routes(From, Count - 1, Planets, Map).
+
+add_route(From, To, Map) ->
+  case lists:member(To, lists:merge(digraph:in_neighbours(Map, From), digraph:out_neighbours(Map, From))) of
+    true -> ok;
+    false -> digraph:add_edge(Map, From, To)
+  end.
 
 %% Planets generator
 

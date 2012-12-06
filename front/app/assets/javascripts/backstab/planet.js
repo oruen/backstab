@@ -18,7 +18,7 @@ backstab.Planet.prototype.draw = function() {
   var planet = new lime.Layer().setPosition(this.x, this.y),
       circle = new lime.Circle().setSize(150,150).setFill(255,150,0),
       base,
-      lbl = new lime.Label().setSize(160,50).setFontSize(30).setText(this.id + '');
+      lbl = new lime.Label().setSize(160,50).setFontSize(30).setText('');
   circle.appendChild(lbl);
   planet.appendChild(circle);
 
