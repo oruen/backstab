@@ -12,6 +12,11 @@ backstab.EventHandler = function(wsHandler, scene) {
     backstab.userinfo = new backstab.User(event.target);
   });
 
+  wsHandler.addEventListener(backstab.WsHandler.EventType.GLOBAL_MAP, function(event) {
+    console.log("Global map");
+    backstab.renderGlobalMap(event.target);
+  });
+
   wsHandler.addEventListener(backstab.WsHandler.EventType.GOTO, function(event) {
     console.log("Goto", event.target);
     var from = backstab.currentMap.planetById(event.target[0]),
