@@ -28,7 +28,9 @@ random() ->
 
 to_front(Map) ->
   Routes = [to_route(Map, E) || E <- digraph:edges(Map)],
-  [{planets, digraph:vertices(Map)}, {routes, Routes}].
+  Planets = digraph:vertices(Map),
+  %[lists:nth(1, Planets)] ++ lists:sublist(Planets, 2, length(Planets) - 1) ++ [lists:last(Planets)],
+  [{planets, Planets}, {routes, Routes}].
 
 to_route(Map, Edge) ->
   {_, Source, Dest, _} = digraph:edge(Map, Edge),
