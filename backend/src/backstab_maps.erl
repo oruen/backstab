@@ -73,27 +73,7 @@ generate_planets(Num, Acc) ->
   generate_planets(Num - 1, [random_planet() | Acc]).
 
 random_planet() ->
-  UserId = random_user(),
-  random_planet(UserId).
-
-random_planet(UserId) ->
   Uid = list_to_binary(uuid:to_string(uuid:v4())),
-  Capacity = random:uniform(?PLANET_MAX_CAPACITY_FACTOR) * ?PLANET_CAPACITY_FACTOR + ?PLANET_CAPACITY_CONST,
-  random_planet(UserId, Uid, Capacity).
-
-random_planet(undefined, Uid, Capacity) ->
-  #planet{id = Uid, capacity = Capacity, type = <<"ground">>};
-random_planet(UserId, Uid, Capacity) ->
   Quantity = random:uniform(?PLANET_MAX_QUANTITY_FACTOR) * ?PLANET_QUANTITY_FACTOR,
-  #planet{id = Uid, capacity = Capacity, type = <<"ground">>, user_id = UserId, quantity = Quantity}.
-
-random_user() ->
-  random_user(random:uniform(15)).
-
-random_user(Seed) when Seed < 3 ->
-  <<"1">>;
-random_user(Seed) when Seed > 13 ->
-  <<"2">>;
-random_user(_) ->
-  undefined.
-
+  Capacity = random:uniform(?PLANET_MAX_CAPACITY_FACTOR) * ?PLANET_CAPACITY_FACTOR + ?PLANET_CAPACITY_CONST,
+  #planet{id = Uid, capacity = Capacity, type = <<"ground">>, quantity = Quantity}.
