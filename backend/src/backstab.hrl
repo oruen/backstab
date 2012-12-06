@@ -14,6 +14,10 @@
                  quantity  = 0 :: integer(),
                  capacity  = 0 :: integer()}).
 
+-record(planet_system, {id :: binary(),
+                        user_id :: binary() | undefined,
+                        map}).
+
 -record(route, {from :: binary(),
                 to   :: binary()}).
 
