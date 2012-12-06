@@ -6,24 +6,41 @@ load(_MapId) ->
   random().
 
 random() ->
+  Map = digraph:new(),
   UserPlanets = [random_planet(<<"1">>),
                  random_planet(<<"1">>),
                  random_planet(<<"2">>),
                  random_planet(<<"2">>)],
   PlanetsNum = random:uniform(3) + 2,
   Planets = generate_planets(PlanetsNum),
-  Routes = generate_routes(Planets),
-  [{planets, UserPlanets ++ Planets}, {routes, Routes}].
+  [digraph:add_vertex(Map, P) || P <- UserPlanets],
+  [digraph:add_vertex(Map, P) || P <- Planets],
+  generate_routes(Map),
+  to_front(Map).
+
+%% Map
+
+to_front(Map) ->
+  Routes = [to_route(Map, E) ||E <- digraph:edges(Map)],
+  [{planets, digraph:vertices(Map)}, {routes, Routes}].
+
+to_route(Map, Edge) ->
+  {_, Source, Dest, _} = digraph:edge(Map, Edge),
+  #route{from = Source#planet.id, to=Source#planet.id}.
 
 %% Routes generator
 
-generate_routes(Planets) ->
-  generate_routes(Planets, []).
+generate_routes(Map) ->
+  Planets = digraph:vertices(Map),
+  generate_routes(Planets, Planets, Map).
 
-generate_routes([From , To | []], Acc) ->
-  [#route{from = From#planet.id, to = To#planet.id} | Acc];
-generate_routes([From , To | Planets], Acc) ->
-  generate_routes([To | Planets], [#route{from = From#planet.id, to = To#planet.id} | Acc]).
+generate_routes([From , To | []], AllPlanets, Map) ->
+  digraph:add_edge(Map, From, To),
+  Map;
+generate_routes([From , To | Planets], AllPlanets, Map) ->
+  %RandomRoutes = random_route(AllPlanets, [From, To]),
+  digraph:add_edge(Map, From, To),
+  generate_routes([To | Planets], AllPlanets, Map).
 
 
 %% Planets generator
