@@ -1,9 +1,20 @@
 -module(backstab_maps).
--export([load/1, random/0]).
+-export([load/1, random/0, create_random/1]).
 -include("backstab.hrl").
 
 load(_MapId) ->
-  random().
+  to_front(random()).
+
+create_random(Num) ->
+  {ok, Store} = riakc_pb_socket:start_link("127.0.0.1", 8087),
+  ok = create_random(Store, Num).
+
+create_random(_Store, 0) ->
+  ok;
+create_random(Store, Num) ->
+  Object = riakc_obj:new(<<"maps">>, uuid:v4(), bert:encode(random())),
+  riakc_pb_socket:put(Store, Object),
+  create_random(Num - 1).
 
 random() ->
   Map = digraph:new(),
@@ -16,8 +27,7 @@ random() ->
   [digraph:add_vertex(Map, P) || P <- UserPlanets],
   [digraph:add_vertex(Map, P) || P <- Planets],
   generate_routes(Map),
-  to_front(Map).
-  %Map.
+  Map.
 
 %% Map
 
