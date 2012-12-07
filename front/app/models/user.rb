@@ -3,7 +3,10 @@ require 'devise/orm/ripple'
 class User
   include Ripple::Document
 
-  before_create :set_color
+  before_create do |record|
+    record.color = "%06x" % (rand * 0xffffff)
+    record.token = SecureRandom.hex
+  end
 
   devise :registerable, :database_authenticatable, :validatable
 
@@ -13,8 +16,15 @@ class User
   property :password_confirmation, String
   property :encrypted_password, String
   property :color, String
+  property :token, String
 
   timestamps!
+
+  class << self
+    def destroy_all
+      bucket.keys.each {|k| Riak::RObject.new(bucket, k).delete }
+    end
+  end
 
   def key
     email
@@ -22,11 +32,6 @@ class User
 
   def id
     email
-  end
-
-  private
-  def set_color
-    self.color = "%06x" % (rand * 0xffffff)
   end
 end
 
