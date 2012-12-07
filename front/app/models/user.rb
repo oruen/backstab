@@ -33,6 +33,10 @@ class User
     def destroy_all
       bucket.keys.each {|k| Riak::RObject.new(bucket, k).delete }
     end
+
+    def find_for_database_authentication conditions
+      find_by_index(:email, conditions[:email]).first
+    end
   end
 
   def key
