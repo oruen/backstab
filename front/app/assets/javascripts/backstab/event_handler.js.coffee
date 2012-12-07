@@ -6,14 +6,14 @@ backstab.EventHandler = (wsHandler, scene) ->
     backstab.currentMap = new backstab.BattleMap(event.target, scene)
     backstab.currentMap.render()
 
-  wsHandler.addEventListener backstab.WsHandler.EventType.USERINFO, (event) ->
-    console.log "Userinfo", event.target
-    backstab.userinfo = new backstab.User(event.target)
-
   wsHandler.addEventListener backstab.WsHandler.EventType.GLOBAL_MAP, (event) ->
     console.log "Global map"
     backstab.planetSystems = []
-    event.target.forEach (e) ->
+    backstab.players = {}
+    event.target[0].forEach (e) ->
+      player = new backstab.Player(e)
+      backstab.players[player.id] = player
+    event.target[1].forEach (e) ->
       backstab.planetSystems.push new backstab.PlanetSystem(e)
 
     backstab.renderGlobalMap backstab.planetSystems

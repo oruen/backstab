@@ -14,7 +14,7 @@ goog.require('backstab.Bert')
 goog.require('backstab.Planet')
 goog.require('backstab.BattleMap')
 goog.require('backstab.PlanetSystem')
-goog.require('backstab.User')
+goog.require('backstab.Player')
 goog.require('backstab.EventHandler')
 goog.require('d3')
 
@@ -68,6 +68,7 @@ backstab.renderGlobalMap = (planetSystems) ->
   nodes = planetSystems.map((d) ->
     radius: d.planets.length * 2 + 10
     userId: d.userId
+    color: "##{d.color}"
   )
   color = d3.scale.category10()
   force = d3.layout.force().gravity(0.02).charge(-100).nodes(nodes).size([width, height])

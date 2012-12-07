@@ -24,7 +24,6 @@ goog.inherits(backstab.WsHandler, goog.events.EventTarget);
 
 backstab.WsHandler.EventType = {
   MAP: goog.events.getUniqueId('map'),
-  USERINFO: goog.events.getUniqueId('userinfo'),
   GOTO: goog.events.getUniqueId('goto'),
   GLOBAL_MAP: goog.events.getUniqueId('global_map')
 };

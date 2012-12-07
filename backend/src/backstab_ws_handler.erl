@@ -37,7 +37,13 @@ websocket_info({timeout, _Ref, {global, init}}, Req, [{riak, RiakPid}]) ->
           Value = riakc_obj:get_value(O),
           bert:decode(Value)
       end, MapKeys),
-    erlang:start_timer(0, self(), {send, global_map, Maps}),
+    {ok, UserKeys} = riakc_pb_socket:list_keys(RiakPid, <<"users">>),
+    Users = lists:map(fun(K) ->
+          {ok, O} = riakc_pb_socket:get(RiakPid, <<"users">>, K),
+          Value = riakc_obj:get_value(O),
+          Value
+      end, UserKeys),
+    erlang:start_timer(0, self(), {send, global_map, [Users, Maps]}),
     {ok, Req, [riak, RiakPid]};
 
 websocket_info({timeout, _Ref, {send, Type, Data}}, Req, State) ->

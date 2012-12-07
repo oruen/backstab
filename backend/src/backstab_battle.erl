@@ -14,7 +14,6 @@ init({MapId, UserId, UserSocket}) ->
     Map = backstab_maps:load(MapId),
     User = #user{id = UserId},
     State = {Map, [{User, UserSocket}]},
-    erlang:start_timer(0, UserSocket, {send, userinfo, User}),
     erlang:start_timer(100, UserSocket, {send, map, Map}),
     {ok, State}.
 
