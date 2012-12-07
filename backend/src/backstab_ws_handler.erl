@@ -35,9 +35,7 @@ websocket_info({timeout, _Ref, {global, init}}, Req, [{riak, RiakPid}]) ->
     Maps = lists:map(fun(K) ->
           {ok, O} = riakc_pb_socket:get(RiakPid, <<"maps">>, K),
           Value = riakc_obj:get_value(O),
-          PlanetSystem = bert:decode(Value),
-          Map = PlanetSystem#planet_system.map,
-          Map
+          bert:decode(Value)
       end, MapKeys),
     erlang:start_timer(0, self(), {send, global_map, Maps}),
     {ok, Req, [riak, RiakPid]};

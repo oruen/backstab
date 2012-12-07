@@ -16,6 +16,7 @@ goog.require('backstab.WsHandler');
 goog.require('backstab.Bert');
 goog.require('backstab.Planet');
 goog.require('backstab.BattleMap');
+goog.require('backstab.PlanetSystem');
 goog.require('backstab.User');
 goog.require('backstab.EventHandler');
 goog.require('d3');
@@ -50,16 +51,16 @@ backstab.showBattleScene = function() {
   this.director.domElement.style["display"] = "block";
 };
 
-backstab.renderGlobalMap = function(data) {
+backstab.renderGlobalMap = function(planetSystems) {
   this.hideBattleScene();
   var width = 960,
       height = 500;
 
-  var nodes = data.map(function(d) {return {radius: d[1][1].length}}),
+  var nodes = planetSystems.map(function(d) {return {radius: d.planets.length * 2 + 10, userId: d.userId}}),
       color = d3.scale.category10();
 
   var force = d3.layout.force()
-      .gravity(0.05)
+      .gravity(0.02)
       .charge(-100)
       .nodes(nodes)
       .size([width, height]);
@@ -75,6 +76,7 @@ backstab.renderGlobalMap = function(data) {
     .enter().append("svg:circle")
       .attr("r", function(d) { return d.radius; })
       .style("fill", function(d, i) { return color(i % 3); })
+      .style("stroke", function(d, i) {console.log(d);return d.userId === Userinfo.token ? "#000" : color(i % 3);})
       .on("click", function() {console.log("clicked", arguments)})
       .call(force.drag);
 
@@ -93,7 +95,7 @@ backstab.renderGlobalMap = function(data) {
   });
 
   function collide(node) {
-    var r = node.radius + 16,
+    var r = node.radius + 40,
         nx1 = node.x - r,
         nx2 = node.x + r,
         ny1 = node.y - r,

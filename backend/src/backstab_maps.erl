@@ -17,7 +17,7 @@ create_random(Store, Num) ->
 
 store(Map, UserId, Store) ->
   Id = list_to_binary(uuid:to_string(uuid:v4())),
-  Object = riakc_obj:new(<<"maps">>, Id, bert:encode(#planet_system{user_id = undefined, map = to_front(Map), id = Id})),
+  Object = riakc_obj:new(<<"maps">>, Id, bert:encode(#planet_system{user_id = UserId, map = to_front(Map), id = Id})),
   riakc_pb_socket:put(Store, Object).
 
 random() ->

@@ -14,7 +14,11 @@ backstab.EventHandler = function(wsHandler, scene) {
 
   wsHandler.addEventListener(backstab.WsHandler.EventType.GLOBAL_MAP, function(event) {
     console.log("Global map");
-    backstab.renderGlobalMap(event.target);
+    backstab.planetSystems = [];
+    event.target.forEach(function(e) {
+      backstab.planetSystems.push(new backstab.PlanetSystem(e));
+    });
+    backstab.renderGlobalMap(backstab.planetSystems);
   });
 
   wsHandler.addEventListener(backstab.WsHandler.EventType.GOTO, function(event) {
