@@ -9,6 +9,12 @@ class User
   end
 
   after_create do |record|
+    conn = Faraday.new(:url => "http://127.0.0.1:8080/create_planet?token=#{record.token}") do |faraday|
+      faraday.request  :url_encoded
+      faraday.response :logger, Rails.logger
+      faraday.adapter  Faraday.default_adapter
+    end
+    conn.post
   end
 
   devise :registerable, :database_authenticatable, :validatable

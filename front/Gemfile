@@ -11,6 +11,7 @@ gem "closure-sprockets", :git => "git://github.com/igrigorik/closure-sprockets.g
 gem 'simple_form'
 gem 'bootstrap-sass'
 gem 'haml'
+gem 'faraday'
 
 # Gems used only for assets and not required
 # in production environments by default.
