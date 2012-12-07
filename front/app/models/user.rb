@@ -8,10 +8,13 @@ class User
     record.token = SecureRandom.hex
   end
 
+  after_create do |record|
+  end
+
   devise :registerable, :database_authenticatable, :validatable
 
-  property :name, String
-  property :email, String, :presence => true
+  property :name, String, :presence => true
+  property :email, String, :presence => true, :index => true
   property :password, String
   property :password_confirmation, String
   property :encrypted_password, String
@@ -27,11 +30,11 @@ class User
   end
 
   def key
-    email
+    token
   end
 
   def id
-    email
+    token
   end
 end
 
