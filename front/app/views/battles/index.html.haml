@@ -1,3 +1,5 @@
 = link_to "Logout", destroy_user_session_path, :class => "btn", :method => :delete
-= javascript_include_tag "battles"
 = stylesheet_link_tag "battles"
+= javascript_tag do
+  window.Userinfo = {token: "#{current_user.id}"};
+= javascript_include_tag "battles"

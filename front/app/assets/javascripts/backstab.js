@@ -33,7 +33,7 @@ backstab.start = function(){
 	// set current scene active
 	backstab.director.replaceScene(scene);
 
-  backstab.wsHandler = new backstab.WsHandler();
+  backstab.wsHandler = new backstab.WsHandler(Userinfo.token);
   new backstab.EventHandler(backstab.wsHandler, scene);
   backstab.wsHandler.connect();
 };

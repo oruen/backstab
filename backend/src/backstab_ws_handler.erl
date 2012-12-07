@@ -8,9 +8,15 @@ init({tcp, http}, _Req, _Opts) ->
     {upgrade, protocol, cowboy_websocket}.
 
 websocket_init(_TransportName, Req, _Opts) ->
-    {ok, Pid} = riakc_pb_socket:start_link("127.0.0.1", 8087),
-    erlang:start_timer(0, self(), {global, init}),
-    {ok, Req, [{riak, Pid}]}.
+    {Token, _} = cowboy_req:qs_val(<<"token">>, Req),
+    {ok, RiakPid} = riakc_pb_socket:start_link("127.0.0.1", 8087),
+    case riakc_pb_socket:get(RiakPid, <<"users">>, Token) of
+        {ok, _} ->
+            erlang:start_timer(0, self(), {global, init}),
+            {ok, Req, [{riak, RiakPid}]};
+        {error, notfound} ->
+            {stop, Req, []}
+    end.
     %{ok, Pid} = supervisor:start_child(backstab_battle_sup, [{<<"map-id">>, <<"1">>, self()}]),
     %{ok, Req, Pid}.
 
