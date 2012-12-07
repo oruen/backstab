@@ -17,6 +17,7 @@ start(_StartType, _StartArgs) ->
     Dispatch = [
       {'_', [
         {[<<"ws">>], backstab_ws_handler, []},
+        {[<<"create_planet">>], create_planet_handler, []},
         {['...'], cowboy_static, [
           {directory, {priv_dir, backstab, []}},
           {mimetypes, {fun mimetypes:path_to_mimes/2, default}}
