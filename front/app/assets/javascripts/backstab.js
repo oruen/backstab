@@ -24,14 +24,14 @@ goog.require('d3');
 backstab.start = function(){
   backstab.currentMap = null;
 
-	var director = new lime.Director(document.body,1024,768),
-	    scene = new lime.Scene();
+	backstab.director = new lime.Director(document.body,1024,768);
+	var scene = new lime.Scene();
   //scene.setRenderer(lime.Renderer.CANVAS);
 
-	director.makeMobileWebAppCapable();
+	backstab.director.makeMobileWebAppCapable();
 
 	// set current scene active
-	director.replaceScene(scene);
+	backstab.director.replaceScene(scene);
 
   backstab.wsHandler = new backstab.WsHandler();
   new backstab.EventHandler(backstab.wsHandler, scene);
@@ -42,12 +42,21 @@ backstab.send = function(msg) {
   this.wsHandler.send(msg);
 };
 
+backstab.hideBattleScene = function() {
+  this.director.domElement.style["display"] = "none";
+};
+
+backstab.showBattleScene = function() {
+  this.director.domElement.style["display"] = "block";
+};
+
 backstab.renderGlobalMap = function(data) {
-  window.D = data;
+  this.hideBattleScene();
   var width = 960,
       height = 500;
 
-  var nodes = data.map(function(d) {return {radius: d[1][1].length}});
+  var nodes = data.map(function(d) {return {radius: d[1][1].length}}),
+      color = d3.scale.category10();
 
   var force = d3.layout.force()
       .gravity(0.05)
@@ -57,29 +66,30 @@ backstab.renderGlobalMap = function(data) {
 
   force.start();
 
-  var canvas = d3.select("body").append("canvas")
+  var svg = d3.select("body").append("svg")
       .attr("width", width)
       .attr("height", height);
 
-  var context = canvas.node().getContext("2d");
+  svg.selectAll("circle")
+      .data(nodes)
+    .enter().append("svg:circle")
+      .attr("r", function(d) { return d.radius; })
+      .style("fill", function(d, i) { return color(i % 3); })
+      .on("click", function() {console.log("clicked", arguments)})
+      .call(force.drag);
 
   force.on("tick", function(e) {
     var q = d3.geom.quadtree(nodes),
-        i,
-        d,
+        i = 0,
         n = nodes.length;
 
-    for (i = 1; i < n; ++i) q.visit(collide(nodes[i]));
-
-    context.clearRect(0, 0, width, height);
-    context.fillStyle = "steelblue";
-    context.beginPath();
-    for (i = 1; i < n; ++i) {
-      d = nodes[i];
-      context.moveTo(d.x, d.y);
-      context.arc(d.x, d.y, d.radius, 0, 2 * Math.PI);
+    while (++i < n) {
+      q.visit(collide(nodes[i]));
     }
-    context.fill();
+
+    svg.selectAll("circle")
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
   });
 
   function collide(node) {
