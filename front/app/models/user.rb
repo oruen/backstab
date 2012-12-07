@@ -1,5 +1,5 @@
 # encoding: utf-8
-require 'orm_adapter/ripple'
+require 'devise/orm/ripple'
 class User
   include Ripple::Document
 

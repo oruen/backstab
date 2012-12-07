@@ -60,8 +60,11 @@ module OrmAdapter
   end
 end
 
-ActiveSupport.on_load(:active_record) do
-  extend ::OrmAdapter::ToAdapter
+Ripple::Document::ClassMethods.class_eval do
+  include ::OrmAdapter::ToAdapter
+end
+Ripple::Document.class_eval do
   self::OrmAdapter = ::OrmAdapter::Ripple
 end
+
 
