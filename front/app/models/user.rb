@@ -3,6 +3,8 @@ require 'devise/orm/ripple'
 class User
   include Ripple::Document
 
+  before_create :set_color
+
   devise :registerable, :database_authenticatable, :validatable
 
   property :name, String
@@ -10,6 +12,7 @@ class User
   property :password, String
   property :password_confirmation, String
   property :encrypted_password, String
+  property :color, String
 
   timestamps!
 
@@ -21,5 +24,9 @@ class User
     email
   end
 
+  private
+  def set_color
+    self.color = "%06x" % (rand * 0xffffff)
+  end
 end
 
