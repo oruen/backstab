@@ -48,6 +48,8 @@ GEM
     arel (3.0.2)
     bcrypt-ruby (3.0.1)
     beefcake (0.3.7)
+    bootstrap-sass (2.2.1.1)
+      sass (~> 3.2)
     builder (3.0.4)
     coffee-rails (3.2.2)
       coffee-script (>= 2.2.0)
@@ -66,6 +68,7 @@ GEM
     eventmachine (1.0.0)
     execjs (1.4.0)
       multi_json (~> 1.0)
+    haml (3.1.7)
     hike (1.2.1)
     i18n (0.6.1)
     journey (1.0.4)
@@ -118,6 +121,9 @@ GEM
       railties (~> 3.2.0)
       sass (>= 3.1.10)
       tilt (~> 1.3)
+    simple_form (2.0.4)
+      actionpack (~> 3.0)
+      activemodel (~> 3.0)
     sprockets (2.2.2)
       hike (~> 1.2)
       multi_json (~> 1.0)
@@ -143,13 +149,16 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bootstrap-sass
   closure-sprockets!
   coffee-rails (~> 3.2.1)
   devise
+  haml
   jquery-rails
   quiet_assets
   rails (= 3.2.9)
   ripple!
   sass-rails (~> 3.2.3)
+  simple_form
   thin
   uglifier (>= 1.0.3)
