@@ -1,5 +1,16 @@
 = link_to "Logout", destroy_user_session_path, :class => "btn", :method => :delete
 = stylesheet_link_tag "battles"
+
+.modal.js-planetinfo.fade.hide
+  .modal-header
+    %button.close{"aria-hidden" => "true", "data-dismiss" => "modal", :type => "button"} ×
+    %h3.js-header
+  .modal-body
+    %p.js-body
+  .modal-footer
+    %button.btn{"aria-hidden" => "true", "data-dismiss" => "modal", :type => "button"} Withdraw
+    %a.btn.btn-danger.js-attack{:href => "#"} Attack!
+
 = javascript_tag do
   window.Userinfo = {token: "#{current_user.id}", id: "#{current_user.email}"};
 = javascript_include_tag "battles"

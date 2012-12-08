@@ -67,6 +67,7 @@ backstab.renderGlobalMap = (planetSystems) ->
   height = 500
   nodes = planetSystems.map((d) ->
     radius: d.planets.length * 2 + 10
+    planetsCount: d.planets.length
     userId: d.userId
     color: "##{d.userId && backstab.players[d.userId].color || "EEE"}"
   )
@@ -79,8 +80,19 @@ backstab.renderGlobalMap = (planetSystems) ->
     d.color
   ).style("stroke", (d, i) ->
     (if d.userId is Userinfo.id then "#000" else d.color)
-  ).on("click", ->
-    console.log "clicked", arguments_
+  ).on("click", (d) ->
+    if d.userId
+      if d.userId == Userinfo.id
+        $(".js-header").text("This planet system belongs to you")
+        $(".js-attack").hide()
+      else
+        $(".js-header").text("This planet system belongs to #{backstab.players[d.userId].name}")
+        $(".js-attack").show()
+    else
+      $(".js-attack").show()
+      $(".js-header").text("This planet system is abandoned")
+    $(".js-body").text "It has #{d.planetsCount} planets. Some outlaws may hide at some of them."
+    $(".js-planetinfo").modal({keyboard: true})
   ).call force.drag
   force.on "tick", (e) ->
     q = d3.geom.quadtree(nodes)
