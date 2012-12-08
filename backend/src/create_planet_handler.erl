@@ -20,12 +20,14 @@ handle(Req, State) ->
 create(Req, State) ->
     {Token, _} = cowboy_req:qs_val(<<"token">>, Req),
     {ok, RiakPid} = riakc_pb_socket:start_link("127.0.0.1", 8087),
-    case riakc_pb_socket:get(RiakPid, <<"users">>, Token) of
-        {ok, _} ->
-            backstab_maps:store(backstab_maps:random(), Token, RiakPid),
-            {ok, Req2} = cowboy_req:reply(201, [], <<"created">>, Req);
+    {ok, Req2} = case riakc_pb_socket:get(RiakPid, <<"users">>, Token) of
+        {ok, O} ->
+            Player = jsx:decode(riakc_obj:get_value(O)),
+            {_, Email} = lists:keyfind(<<"email">>, 1, Player),
+            backstab_maps:store(backstab_maps:random(), Email, RiakPid),
+            cowboy_req:reply(201, [], <<"created">>, Req);
         {error, notfound} ->
-            {ok, Req2} = cowboy_req:reply(404, [], <<"not found">>, Req)
+            cowboy_req:reply(404, [], <<"not found">>, Req)
     end,
     {ok, Req2, State}.
 

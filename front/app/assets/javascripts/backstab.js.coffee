@@ -79,7 +79,7 @@ backstab.renderGlobalMap = (planetSystems) ->
   ).style("fill", (d, i) ->
     color i % 3
   ).style("stroke", (d, i) ->
-    (if d.userId is Userinfo.token then "#000" else color(i % 3))
+    (if d.userId is Userinfo.id then "#000" else color(i % 3))
   ).on("click", ->
     console.log "clicked", arguments_
   ).call force.drag
