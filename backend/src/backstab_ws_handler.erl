@@ -31,18 +31,18 @@ websocket_handle(_Data, Req, State) ->
     {ok, Req, State}.
 
 websocket_info({timeout, _Ref, {global, init}}, Req, [{riak, RiakPid}]) ->
+    {ok, UserKeys} = riakc_pb_socket:list_keys(RiakPid, <<"users">>),
+    Users = lists:map(fun(K) ->
+          {ok, O} = riakc_pb_socket:get(RiakPid, <<"users">>, K),
+          Value = riakc_obj:get_value(O),
+          lists:filter(fun({E,  _}) -> lists:member(E, [<<"email">>, <<"name">>, <<"color">>]) end, jsx:decode(Value))
+      end, UserKeys),
     {ok, MapKeys} = riakc_pb_socket:list_keys(RiakPid, <<"maps">>),
     Maps = lists:map(fun(K) ->
           {ok, O} = riakc_pb_socket:get(RiakPid, <<"maps">>, K),
           Value = riakc_obj:get_value(O),
           bert:decode(Value)
       end, MapKeys),
-    {ok, UserKeys} = riakc_pb_socket:list_keys(RiakPid, <<"users">>),
-    Users = lists:map(fun(K) ->
-          {ok, O} = riakc_pb_socket:get(RiakPid, <<"users">>, K),
-          Value = riakc_obj:get_value(O),
-          Value
-      end, UserKeys),
     erlang:start_timer(0, self(), {send, global_map, [Users, Maps]}),
     {ok, Req, [riak, RiakPid]};
 
