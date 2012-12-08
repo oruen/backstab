@@ -68,18 +68,17 @@ backstab.renderGlobalMap = (planetSystems) ->
   nodes = planetSystems.map((d) ->
     radius: d.planets.length * 2 + 10
     userId: d.userId
-    color: "##{d.color}"
+    color: "##{d.userId && backstab.players[d.userId].color || "EEE"}"
   )
-  color = d3.scale.category10()
   force = d3.layout.force().gravity(0.02).charge(-100).nodes(nodes).size([width, height])
   force.start()
   svg = d3.select("body").append("svg").attr("width", width).attr("height", height)
   svg.selectAll("circle").data(nodes).enter().append("svg:circle").attr("r", (d) ->
     d.radius
   ).style("fill", (d, i) ->
-    color i % 3
+    d.color
   ).style("stroke", (d, i) ->
-    (if d.userId is Userinfo.id then "#000" else color(i % 3))
+    (if d.userId is Userinfo.id then "#000" else d.color)
   ).on("click", ->
     console.log "clicked", arguments_
   ).call force.drag

@@ -12,7 +12,7 @@ create_random(Num) ->
 create_random(_Store, 0) ->
   ok;
 create_random(Store, Num) ->
-  store(random(), undefined, Store),
+  store(random(), false, Store),
   create_random(Store, Num - 1).
 
 store(Map, UserId, Store) ->
