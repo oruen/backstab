@@ -3,7 +3,7 @@
 -include("backstab.hrl").
 
 load(_MapId) ->
-  to_front(random()).
+  {ok, to_front(random())}.
 
 create_random(Num) ->
   random:seed(erlang:now()),

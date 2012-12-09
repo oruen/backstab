@@ -9,7 +9,7 @@
     %p.js-body
   .modal-footer
     %button.btn{"aria-hidden" => "true", "data-dismiss" => "modal", :type => "button"} Withdraw
-    %a.btn.btn-danger.js-attack{:href => "#"} Attack!
+    %button.btn.btn-danger.js-attack Attack!
 
 = javascript_tag do
   window.Userinfo = {token: "#{current_user.id}", id: "#{current_user.email}"};

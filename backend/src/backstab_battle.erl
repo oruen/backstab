@@ -11,9 +11,8 @@ start_link(Args) ->
 init({MapId, UserId, UserSocket}) ->
     link(UserSocket),
     process_flag(trap_exit, true),
-    Map = backstab_maps:load(MapId),
-    User = #user{id = UserId},
-    State = {Map, [{User, UserSocket}]},
+    {ok, Map} = backstab_maps:load(MapId),
+    State = {Map, [{UserId, UserSocket}]},
     erlang:start_timer(100, UserSocket, {send, map, Map}),
     {ok, State}.
 

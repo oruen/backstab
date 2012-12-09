@@ -13,24 +13,32 @@ websocket_init(_TransportName, Req, _Opts) ->
     case riakc_pb_socket:get(RiakPid, <<"users">>, Token) of
         {ok, _} ->
             erlang:start_timer(0, self(), {global, init}),
-            {ok, Req, [{riak, RiakPid}]};
+            {ok, Req, [{riak, RiakPid}, {player, Token}]};
         {error, notfound} ->
             {stop, Req, []}
     end.
     %{ok, Pid} = supervisor:start_child(backstab_battle_sup, [{<<"map-id">>, <<"1">>, self()}]),
     %{ok, Req, Pid}.
 
-websocket_handle({binary, <<_Ws, Msg/binary>>}, Req, Pid) ->
+websocket_handle({binary, <<_Ws, Msg/binary>>}, Req, State) ->
     DecodedMsg = bert:decode(Msg),
-    gen_server:cast(Pid, DecodedMsg),
-    %handle_request(DecodedMsg, State),
-    {ok, Req, Pid};
-    %{reply, {binary, bert:encode(DecodedMsg)}, Req, State};
+    message_handle(DecodedMsg, Req, State);
 
 websocket_handle(_Data, Req, State) ->
     {ok, Req, State}.
 
-websocket_info({timeout, _Ref, {global, init}}, Req, [{riak, RiakPid}]) ->
+message_handle({global, fight, MapId}, Req, State) ->
+    {_, UserId} = lists:keyfind(player, 1, State),
+    {ok, Pid} = supervisor:start_child(backstab_battle_sup, [{MapId, UserId, self()}]),
+    {ok, Req, [{battle, Pid} | State]};
+
+message_handle(Msg, Req, State) ->
+    {_, Battle} = lists:keyfind(battle, 1, State),
+    gen_server:cast(Battle, Msg),
+    {ok, Req, State}.
+
+websocket_info({timeout, _Ref, {global, init}}, Req, State) ->
+    {_, RiakPid} = lists:keyfind(riak, 1, State),
     {ok, UserKeys} = riakc_pb_socket:list_keys(RiakPid, <<"users">>),
     Users = lists:map(fun(K) ->
           {ok, O} = riakc_pb_socket:get(RiakPid, <<"users">>, K),
@@ -44,7 +52,7 @@ websocket_info({timeout, _Ref, {global, init}}, Req, [{riak, RiakPid}]) ->
           bert:decode(Value)
       end, MapKeys),
     erlang:start_timer(0, self(), {send, global_map, [Users, Maps]}),
-    {ok, Req, [riak, RiakPid]};
+    {ok, Req, State};
 
 websocket_info({timeout, _Ref, {send, Type, Data}}, Req, State) ->
     Msg = bert:encode({Type, Data}),

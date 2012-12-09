@@ -17,30 +17,32 @@ goog.require('backstab.PlanetSystem')
 goog.require('backstab.Player')
 goog.require('backstab.EventHandler')
 goog.require('d3')
+goog.require('goog.dom')
+goog.require('goog.dom.dataset')
 
 # entrypoint
 backstab.start = ->
+  attackButton = goog.dom.getElementByClass('js-attack')
+  goog.events.listen attackButton, goog.events.EventType.CLICK, ->
+    backstab.prepareFight(goog.dom.dataset.getAll(attackButton))
   backstab.currentMap = null
-  backstab.director = new lime.Director(document.body, 1024, 768)
-  scene = new lime.Scene()
-
-  #scene.setRenderer(lime.Renderer.CANVAS);
-  backstab.director.makeMobileWebAppCapable()
-
-  # set current scene active
-  backstab.director.replaceScene scene
   backstab.wsHandler = new backstab.WsHandler(Userinfo.token)
-  new backstab.EventHandler(backstab.wsHandler, scene)
+  new backstab.EventHandler(backstab.wsHandler)
   backstab.wsHandler.connect()
+
+backstab.prepareFight = (params)->
+  goog.style.showElement goog.dom.getElementByClass("global-map"), false
+  planetSystemId = params["planetsystemid"]
+  $(".js-planetinfo").modal('hide')
+  @send Bert.tuple(Bert.atom("global"), Bert.atom("fight"), Bert.binary(planetSystemId))
+  backstab.director = new lime.Director(document.body, 1024, 768)
+  @scene = new lime.Scene()
+  #scene.setRenderer(lime.Renderer.CANVAS);
+  @director.makeMobileWebAppCapable()
+  @director.replaceScene @scene
 
 backstab.send = (msg) ->
   @wsHandler.send msg
-
-backstab.hideBattleScene = ->
-  @director.domElement.style["display"] = "none"
-
-backstab.showBattleScene = ->
-  @director.domElement.style["display"] = "block"
 
 backstab.renderGlobalMap = (planetSystems) ->
   collide = (node) ->
@@ -62,7 +64,6 @@ backstab.renderGlobalMap = (planetSystems) ->
           quad.point.x += x
           quad.point.y += y
       x1 > nx2 or x2 < nx1 or y1 > ny2 or y2 < ny1
-  @hideBattleScene()
   width = 960
   height = 500
   nodes = planetSystems.map((d) ->
@@ -70,10 +71,11 @@ backstab.renderGlobalMap = (planetSystems) ->
     planetsCount: d.planets.length
     userId: d.userId
     color: "##{d.userId && backstab.players[d.userId].color || "EEE"}"
+    id: d.id
   )
   force = d3.layout.force().gravity(0.02).charge(-100).nodes(nodes).size([width, height])
   force.start()
-  svg = d3.select("body").append("svg").attr("width", width).attr("height", height)
+  svg = d3.select("body").append("svg").attr("width", width).attr("height", height).classed("global-map", true)
   svg.selectAll("circle").data(nodes).enter().append("svg:circle").attr("r", (d) ->
     d.radius
   ).style("fill", (d, i) ->
@@ -81,17 +83,19 @@ backstab.renderGlobalMap = (planetSystems) ->
   ).style("stroke", (d, i) ->
     (if d.userId is Userinfo.id then "#000" else d.color)
   ).on("click", (d) ->
+    attackButton = goog.dom.getElementByClass("js-attack")
+    goog.dom.dataset.set attackButton, "planetsystemid", d.id
     if d.userId
       if d.userId == Userinfo.id
-        $(".js-header").text("This planet system belongs to you")
-        $(".js-attack").hide()
+        goog.dom.getElementByClass("js-header").innerText = "This planet system belongs to you"
+        goog.style.showElement attackButton, false
       else
-        $(".js-header").text("This planet system belongs to #{backstab.players[d.userId].name}")
-        $(".js-attack").show()
+        goog.dom.getElementByClass("js-header").innerText = "This planet system belongs to #{backstab.players[d.userId].name}"
+        goog.style.showElement attackButton, true
     else
-      $(".js-attack").show()
-      $(".js-header").text("This planet system is abandoned")
-    $(".js-body").text "It has #{d.planetsCount} planets. Some outlaws may hide at some of them."
+      goog.style.showElement attackButton, true
+      goog.dom.getElementByClass("js-header").innerText = "This planet system is abandoned"
+    goog.dom.getElementByClass("js-body").innerText = "It has #{d.planetsCount} planets. Some outlaws may hide at some of them."
     $(".js-planetinfo").modal({keyboard: true})
   ).call force.drag
   force.on "tick", (e) ->
