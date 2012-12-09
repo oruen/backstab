@@ -6,6 +6,7 @@ load(_MapId) ->
   to_front(random()).
 
 create_random(Num) ->
+  random:seed(erlang:now()),
   {ok, Store} = riakc_pb_socket:start_link("127.0.0.1", 8087),
   ok = create_random(Store, Num).
 

@@ -5,6 +5,7 @@
 -export([init/3, handle/2, terminate/2]).
 
 init({tcp, http}, Req, _Opts) ->
+    random:seed(erlang:now()),
     {ok, Req, undefined_state}.
 
 handle(Req, State) ->
