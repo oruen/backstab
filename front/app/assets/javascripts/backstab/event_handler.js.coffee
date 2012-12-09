@@ -3,7 +3,8 @@ goog.provide("backstab.EventHandler")
 backstab.EventHandler = (wsHandler) ->
   wsHandler.addEventListener backstab.WsHandler.EventType.MAP, (event) ->
     console.log "Time to draw"
-    backstab.currentMap = new backstab.BattleMap(event.target, backstab.scene)
+    planetSystem = new backstab.PlanetSystem(event.target)
+    backstab.currentMap = new backstab.BattleMap(planetSystem, backstab.scene)
     backstab.currentMap.render()
 
   wsHandler.addEventListener backstab.WsHandler.EventType.GLOBAL_MAP, (event) ->

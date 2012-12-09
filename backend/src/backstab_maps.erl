@@ -1,9 +1,11 @@
 -module(backstab_maps).
--export([load/1, random/0, create_random/1, to_front/1, store/3]).
+-export([load/2, random/0, create_random/1, to_front/1, store/3]).
 -include("backstab.hrl").
 
-load(_MapId) ->
-  {ok, to_front(random())}.
+load(MapId, RiakPid) ->
+  {ok, O} = riakc_pb_socket:get(RiakPid, <<"maps">>, MapId),
+  Map = riakc_obj:get_value(O),
+  {ok, bert:decode(Map)}.
 
 create_random(Num) ->
   random:seed(erlang:now()),

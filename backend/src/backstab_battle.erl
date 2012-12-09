@@ -11,8 +11,11 @@ start_link(Args) ->
 init({MapId, UserId, UserSocket}) ->
     link(UserSocket),
     process_flag(trap_exit, true),
-    {ok, Map} = backstab_maps:load(MapId),
-    State = {Map, [{UserId, UserSocket}]},
+    {ok, RiakPid} = riakc_pb_socket:start_link("127.0.0.1", 8087),
+    {ok, Map} = backstab_maps:load(MapId, RiakPid),
+    State = [{map, Map},
+             {riak, RiakPid},
+             {players, [{id, UserId}, {socket, UserSocket}]}],
     erlang:start_timer(100, UserSocket, {send, map, Map}),
     {ok, State}.
 

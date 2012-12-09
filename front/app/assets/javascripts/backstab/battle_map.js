@@ -5,13 +5,13 @@ goog.require('backstab.Route');
 goog.require('backstab.Army');
 goog.require('springy');
 
-backstab.BattleMap = function(mapInfo, scene) {
+backstab.BattleMap = function(planetSystem, scene) {
   this.scene = scene;
   this.planets = [];
   this.routes = [];
 
-  this.createPlanets(mapInfo);
-  this.createRoutes(mapInfo);
+  this.createPlanets(planetSystem);
+  this.createRoutes(planetSystem);
   this.positionPlanets(this.planets, this.routes);
 };
 
@@ -36,19 +36,17 @@ backstab.BattleMap.prototype._render = function(scene) {
   }, this));
 };
 
-backstab.BattleMap.prototype.createPlanets = function(mapInfo) {
-  var planetsInfo = mapInfo.filter(function(e) {return e[0].value === "planets"})[0][1].map(function(e) {return e.value;});
-  planetsInfo.forEach(goog.bind(function(params) {
+backstab.BattleMap.prototype.createPlanets = function(planetSystem) {
+  planetSystem.planets.forEach(goog.bind(function(params) {
     console.log("planet", params);
     var planet = new backstab.Planet(params);
     this.planets.push(planet);
   }, this));
 };
 
-backstab.BattleMap.prototype.createRoutes = function(mapInfo) {
-  var routesInfo = mapInfo.filter(function(e) {return e[0].value === "routes"})[0][1].map(function(e) {return e.value;});
+backstab.BattleMap.prototype.createRoutes = function(planetSystem) {
   var from, to;
-  routesInfo.forEach(goog.bind(function(params) {
+  planetSystem.routes.forEach(goog.bind(function(params) {
     console.log("route", params);
     from = this.planets.filter(function(p) {return p.id == params[1].value})[0];
     to = this.planets.filter(function(p) {return p.id == params[2].value})[0];
