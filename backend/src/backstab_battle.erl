@@ -17,16 +17,22 @@ init({MapId, UserId, UserSocket}) ->
     {planets, Planets} = lists:keyfind(planets, 1, Map),
     Defender = lists:nth(1, Planets),
     Attacker = lists:last(Planets),
-    PopulatedPlanets = [Defender#planet{user_id = PlanetSystem#planet_system.user_id}] ++
-                       lists:delete(Attacker, lists:delete(Defender, Planets)) ++
-                       [Attacker#planet{user_id = UserId}],
-    PopulatedMap = [{planets, PopulatedPlanets} | lists:delete({planets, Planets}, Map)],
-    PopulatedPlanetSystem = PlanetSystem#planet_system{map = PopulatedMap},
-    State = [{map, PopulatedPlanetSystem},
+    Graph = build_digraph(Map),
+    digraph:add_vertex(Graph, Defender#planet.id, Defender#planet{user_id = PlanetSystem#planet_system.user_id}),
+    digraph:add_vertex(Graph, Attacker#planet.id, Attacker#planet{user_id = UserId}),
+    State = [{map, Graph},
              {riak, RiakPid},
              {players, [[{id, UserId}, {socket, UserSocket}]]}],
+    PopulatedPlanetSystem = PlanetSystem#planet_system{map = backstab_maps:to_front(Graph)},
     erlang:start_timer(100, UserSocket, {send, map, PopulatedPlanetSystem}),
     {ok, State}.
+
+build_digraph(Map) ->
+    Graph = digraph:new(),
+    [{planets, Planets}, {routes, Routes}] = Map,
+    [digraph:add_vertex(Graph, Planet#planet.id, Planet) || Planet <- Planets],
+    [digraph:add_edge(Graph, Route#route.from, Route#route.to) || Route <- Routes],
+    Graph.
 
 stop() ->
     ok.

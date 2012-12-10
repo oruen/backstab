@@ -27,7 +27,7 @@ random() ->
   Map = digraph:new(),
   PlanetsNum = random:uniform(?PLANETS_NUM_RAND_MAX) + ?PLANETS_NUM_FIX,
   Planets = generate_planets(PlanetsNum),
-  [digraph:add_vertex(Map, P) || P <- Planets],
+  [digraph:add_vertex(Map, P#planet.id, P) || P <- Planets],
   generate_routes(Map),
   Map.
 
@@ -35,13 +35,16 @@ random() ->
 
 to_front(Map) ->
   Routes = [to_route(Map, E) || E <- digraph:edges(Map)],
-  Planets = digraph:vertices(Map),
-  %[lists:nth(1, Planets)] ++ lists:sublist(Planets, 2, length(Planets) - 1) ++ [lists:last(Planets)],
+  Planets = [to_planet(Map, N) || N <- digraph:vertices(Map)],
   [{planets, Planets}, {routes, Routes}].
 
 to_route(Map, Edge) ->
   {_, Source, Dest, _} = digraph:edge(Map, Edge),
-  #route{from = Source#planet.id, to=Dest#planet.id}.
+  #route{from = Source, to=Dest}.
+
+to_planet(Map, Node) ->
+  {_, Planet} = digraph:vertex(Map, Node),
+  Planet.
 
 %% Routes generator
 
