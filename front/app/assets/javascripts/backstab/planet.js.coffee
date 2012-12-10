@@ -32,7 +32,7 @@ class backstab.Planet
   drawBase: ->
     # create planetbase
     color = undefined
-    if @userId is backstab.userinfo.id
+    if @userId == Userinfo.id
       color = [121, 142, 224]
     else
       color = [201, 32, 32]

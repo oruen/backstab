@@ -4,8 +4,8 @@
 
 load(MapId, RiakPid) ->
   {ok, O} = riakc_pb_socket:get(RiakPid, <<"maps">>, MapId),
-  Map = riakc_obj:get_value(O),
-  {ok, bert:decode(Map)}.
+  PlanetSystem = bert:decode(riakc_obj:get_value(O)),
+  {ok, PlanetSystem}.
 
 create_random(Num) ->
   random:seed(erlang:now()),

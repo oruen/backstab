@@ -11,9 +11,10 @@ websocket_init(_TransportName, Req, _Opts) ->
     {Token, _} = cowboy_req:qs_val(<<"token">>, Req),
     {ok, RiakPid} = riakc_pb_socket:start_link("127.0.0.1", 8087),
     case riakc_pb_socket:get(RiakPid, <<"users">>, Token) of
-        {ok, _} ->
+        {ok, O} ->
+            Userinfo = jsx:decode(riakc_obj:get_value(O)),
             erlang:start_timer(0, self(), {global, init}),
-            {ok, Req, [{riak, RiakPid}, {player, Token}]};
+            {ok, Req, [{riak, RiakPid}, {player, Userinfo}]};
         {error, notfound} ->
             {stop, Req, []}
     end.
@@ -28,8 +29,9 @@ websocket_handle(_Data, Req, State) ->
     {ok, Req, State}.
 
 message_handle({global, fight, MapId}, Req, State) ->
-    {_, UserId} = lists:keyfind(player, 1, State),
-    {ok, Pid} = supervisor:start_child(backstab_battle_sup, [{MapId, UserId, self()}]),
+    {_, Userinfo} = lists:keyfind(player, 1, State),
+    {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
+    {ok, Pid} = supervisor:start_child(backstab_battle_sup, [{MapId, Email, self()}]),
     {ok, Req, [{battle, Pid} | State]};
 
 message_handle(Msg, Req, State) ->

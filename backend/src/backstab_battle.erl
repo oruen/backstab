@@ -12,11 +12,20 @@ init({MapId, UserId, UserSocket}) ->
     link(UserSocket),
     process_flag(trap_exit, true),
     {ok, RiakPid} = riakc_pb_socket:start_link("127.0.0.1", 8087),
-    {ok, Map} = backstab_maps:load(MapId, RiakPid),
-    State = [{map, Map},
+    {ok, PlanetSystem} = backstab_maps:load(MapId, RiakPid),
+    Map = PlanetSystem#planet_system.map,
+    {planets, Planets} = lists:keyfind(planets, 1, Map),
+    Defender = lists:nth(1, Planets),
+    Attacker = lists:last(Planets),
+    PopulatedPlanets = [Defender#planet{user_id = PlanetSystem#planet_system.user_id}] ++
+                       lists:delete(Attacker, lists:delete(Defender, Planets)) ++
+                       [Attacker#planet{user_id = UserId}],
+    PopulatedMap = [{planets, PopulatedPlanets} | lists:delete({planets, Planets}, Map)],
+    PopulatedPlanetSystem = PlanetSystem#planet_system{map = PopulatedMap},
+    State = [{map, PopulatedPlanetSystem},
              {riak, RiakPid},
              {players, [{id, UserId}, {socket, UserSocket}]}],
-    erlang:start_timer(100, UserSocket, {send, map, Map}),
+    erlang:start_timer(100, UserSocket, {send, map, PopulatedPlanetSystem}),
     {ok, State}.
 
 stop() ->
