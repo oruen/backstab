@@ -25,7 +25,8 @@ goog.inherits(backstab.WsHandler, goog.events.EventTarget);
 backstab.WsHandler.EventType = {
   MAP: goog.events.getUniqueId('map'),
   GOTO: goog.events.getUniqueId('goto'),
-  GLOBAL_MAP: goog.events.getUniqueId('global_map')
+  GLOBAL_MAP: goog.events.getUniqueId('global_map'),
+  POPULATION: goog.events.getUniqueId('population')
 };
 
 backstab.WsHandler.prototype.onOpen = function() {

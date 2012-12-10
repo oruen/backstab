@@ -35,3 +35,9 @@ backstab.EventHandler = (wsHandler) ->
     , backstab)
     army.runAction anim
 
+  wsHandler.addEventListener backstab.WsHandler.EventType.POPULATION, (event) ->
+    console.log "Populatoin", event.target
+    planet = backstab.currentMap.planetById(event.target[0].value)
+    population = event.target[1]
+    planet.setQuantity(population)
+

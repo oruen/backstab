@@ -29,6 +29,11 @@ class backstab.Planet
       circle.runAction new lime.animation.ColorTo(255, 150, 0).setDuration(.1)
     planet
 
+  setQuantity: (val)->
+    @quantity = val
+    if @userId
+      @baseNode.getChildAt(1).setText(val + '')
+
   drawBase: ->
     # create planetbase
     color = undefined
@@ -41,6 +46,7 @@ class backstab.Planet
     text = new lime.Label().setFontSize(30).setText(@quantity)
     base.appendChild handler
     base.appendChild text
+    @baseNode = base
     # Drag army to another planet
     goog.events.listen handler, ["mousedown", "touchstart"], goog.bind((e) ->
       e.event.stopPropagation()

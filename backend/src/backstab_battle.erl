@@ -47,6 +47,7 @@ handle_cast({goto, [From, To]}, State) ->
             {_, Players} = lists:keyfind(players, 1, State),
             lists:map(fun(P) ->
                 {_, Socket} = lists:keyfind(socket, 1, P),
+                erlang:start_timer(0, Socket, {send, population, {From, 0}}),
                 erlang:start_timer(0, Socket, {send, goto, [From, To]})
             end, Players);
         false -> ok
