@@ -21,8 +21,8 @@ backstab.EventHandler = (wsHandler) ->
 
   wsHandler.addEventListener backstab.WsHandler.EventType.GOTO, (event) ->
     console.log "Goto", event.target
-    from = backstab.currentMap.planetById(event.target[0])
-    to = backstab.currentMap.planetById(event.target[1])
+    from = backstab.currentMap.planetById(event.target[0].value)
+    to = backstab.currentMap.planetById(event.target[1].value)
     if from.userId == Userinfo.id
       color = [121, 142, 224]
     else

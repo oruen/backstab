@@ -1,5 +1,5 @@
 -module(backstab_maps).
--export([load/2, random/0, create_random/1, to_front/1, store/3]).
+-export([load/2, random/0, create_random/1, to_front/1, store/3, planets_connected/3]).
 -include("backstab.hrl").
 
 load(MapId, RiakPid) ->
@@ -69,10 +69,13 @@ random_routes(From, Count, Planets, Map) ->
   random_routes(From, Count - 1, Planets, Map).
 
 add_route(From, To, Map) ->
-  case lists:member(To, lists:merge(digraph:in_neighbours(Map, From), digraph:out_neighbours(Map, From))) of
+  case planets_connected(From, To, Map) of
     true -> ok;
     false -> digraph:add_edge(Map, From, To)
   end.
+
+planets_connected(From, To, Map) ->
+  lists:member(To, lists:merge(digraph:in_neighbours(Map, From), digraph:out_neighbours(Map, From))).
 
 %% Planets generator
 

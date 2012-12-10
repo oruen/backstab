@@ -52,7 +52,7 @@ class backstab.Planet
         handler.runAction new lime.animation.Spawn(new lime.animation.MoveTo(0, 0).setDuration(.2), new lime.animation.FadeTo(.01).setDuration(.2), new lime.animation.ScaleTo(1).setDuration(.2))
       goog.events.listen drag, lime.events.Drag.Event.DROP, goog.bind((e) ->
         #var dropTarget = e.activeDropTarget;
-        backstab.send Bert.tuple(Bert.atom("goto"), [@id + "", e.activeDropTarget.object.id + ""])
+        backstab.send Bert.tuple(Bert.atom("goto"), [Bert.binary(@id + ""), Bert.binary(e.activeDropTarget.object.id + "")])
         e.stopPropagation()
         handler.runAction new lime.animation.Sequence(new lime.animation.Spawn(new lime.animation.FadeTo(.01).setDuration(.2), new lime.animation.ScaleTo(1).setDuration(.2)), new lime.animation.MoveTo(0, 0).setDuration(.1))
       , this)
