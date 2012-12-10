@@ -44,21 +44,41 @@ handle_cast({goto, [From, To]}, State) ->
     {_, Map} = lists:keyfind(map, 1, State),
     case backstab_maps:planets_connected(From, To, Map) of
         true ->
-            {_, Players} = lists:keyfind(players, 1, State),
-            lists:map(fun(P) ->
-                {_, Socket} = lists:keyfind(socket, 1, P),
-                erlang:start_timer(0, Socket, {send, population, {From, 0}}),
-                erlang:start_timer(0, Socket, {send, goto, [From, To]})
-            end, Players);
+            send_all({send, population, {From, 0}}, State),
+            send_all({send, goto, [From, To]}, State),
+            {_, PlanetFrom} = digraph:vertex(Map, From),
+            Quantity = PlanetFrom#planet.quantity,
+            UserId = PlanetFrom#planet.user_id,
+            erlang:start_timer(1000, self(), {Quantity, UserId, To});
         false -> ok
     end,
     {noreply, State};
 handle_cast(_Cmd, State) ->
     {noreply, State}.
 
+send_all(Msg, State) ->
+    {_, Players} = lists:keyfind(players, 1, State),
+    lists:map(fun(P) ->
+        {_, Socket} = lists:keyfind(socket, 1, P),
+        erlang:start_timer(0, Socket, Msg)
+    end, Players).
+
 % Interrupt battle on gamer disconnect.
 handle_info({'EXIT', _Pid, Reason}, State) ->
     {stop, Reason, State};
+handle_info({timeout, _Ref, {Quantity, UserId, Dest}}, State) ->
+    {_, Map} = lists:keyfind(map, 1, State),
+    {_, Planet} = digraph:vertex(Map, Dest),
+    Quantity1 = case UserId == Planet#planet.user_id of
+        true ->
+            Quantity + Planet#planet.quantity;
+        false ->
+            Planet#planet.quantity - Quantity
+    end,
+    Planet1 = Planet#planet{quantity = Quantity1},
+    digraph:add_vertex(Map, Dest, Planet1),
+    send_all({send, population, {Dest, Quantity1}}, State),
+    {noreply, State};
 handle_info(_Cmd, State) ->
     {noreply, State}.
 

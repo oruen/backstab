@@ -33,6 +33,7 @@ class backstab.Planet
     @quantity = val
     if @userId
       @baseNode.getChildAt(1).setText(val + '')
+    @node.getChildAt(0).getChildAt(0).setText(val + '')
 
   drawBase: ->
     # create planetbase
