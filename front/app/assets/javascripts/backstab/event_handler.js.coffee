@@ -23,15 +23,15 @@ backstab.EventHandler = (wsHandler) ->
     console.log "Goto", event.target
     from = backstab.currentMap.planetById(event.target[0])
     to = backstab.currentMap.planetById(event.target[1])
-    if from.userId is backstab.userinfo.id
+    if from.userId == Userinfo.id
       color = [121, 142, 224]
     else
       color = [201, 32, 32]
     army = new lime.Circle().setPosition(from.node.getPosition()).setSize(80, 80).setFill(color[0], color[1], color[2])
-    scene.appendChild army
+    backstab.scene.appendChild army
     anim = new lime.animation.Sequence(new lime.animation.MoveTo(to.node.getPosition()), new lime.animation.FadeTo(0).setDuration(.2))
     goog.events.listen anim, "stop", goog.bind(->
-      scene.removeChild army
+      backstab.scene.removeChild army
     , backstab)
     army.runAction anim
 

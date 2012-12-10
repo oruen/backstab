@@ -24,7 +24,7 @@ init({MapId, UserId, UserSocket}) ->
     PopulatedPlanetSystem = PlanetSystem#planet_system{map = PopulatedMap},
     State = [{map, PopulatedPlanetSystem},
              {riak, RiakPid},
-             {players, [{id, UserId}, {socket, UserSocket}]}],
+             {players, [[{id, UserId}, {socket, UserSocket}]]}],
     erlang:start_timer(100, UserSocket, {send, map, PopulatedPlanetSystem}),
     {ok, State}.
 
@@ -35,10 +35,13 @@ handle_call(_Cmd, _From, State) ->
     {ok, State}.
 
 handle_cast({goto, [From, To]}, State) ->
-    {_, [{_, UserSocket}]} = State,
-    erlang:start_timer(0, UserSocket, {send, goto, [From, To]}),
+    % TODO Validate route
+    {_, Players} = lists:keyfind(players, 1, State),
+    lists:map(fun(P) ->
+        {_, Socket} = lists:keyfind(socket, 1, P),
+        erlang:start_timer(0, Socket, {send, goto, [From, To]})
+    end, Players),
     {noreply, State};
-    %send_all({goto, From, To}, State)
 handle_cast(_Cmd, State) ->
     {noreply, State}.
 
