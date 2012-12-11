@@ -46,7 +46,7 @@ handle_cast({goto, [From, To]}, State) ->
         true ->
             {_, PlanetFrom} = digraph:vertex(Map, From),
             digraph:add_vertex(Map, From, PlanetFrom#planet{quantity = 0}),
-            send_all({send, population, {From, 0}}, State),
+            send_all({send, population, [{From, 0}]}, State),
             send_all({send, goto, [From, To]}, State),
             Quantity = PlanetFrom#planet.quantity,
             UserId = PlanetFrom#planet.user_id,
@@ -78,7 +78,7 @@ handle_info({timeout, _Ref, {Quantity, UserId, Dest}}, State) ->
     end,
     Planet1 = Planet#planet{quantity = Quantity1},
     digraph:add_vertex(Map, Dest, Planet1),
-    send_all({send, population, {Dest, Quantity1}}, State),
+    send_all({send, population, [{Dest, Quantity1}]}, State),
     {noreply, State};
 handle_info(_Cmd, State) ->
     {noreply, State}.
