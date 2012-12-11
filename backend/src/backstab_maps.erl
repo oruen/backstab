@@ -60,7 +60,7 @@ generate_routes([From , To | Planets], AllPlanets, Map) ->
 
 generate_routes_for(From, To, Planets, Map) ->
   add_route(From, To, Map),
-  random_routes(From, random:uniform(?ROUTES_MAX_COUNT - 1), Planets, Map).
+  random_routes(From, random:uniform(?ROUTES_MAX_COUNT - 1) + 1, Planets, Map).
 
 random_routes(_From, 0, _Planets, _Map) ->
   ok;

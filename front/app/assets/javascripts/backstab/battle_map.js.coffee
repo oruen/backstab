@@ -71,15 +71,15 @@ class backstab.BattleMap
         e.data.id is route.dest.id
       )[0]
       graph.newEdge sourceNode, destNode
-    layout = new Layout.ForceDirected(graph, 400.0, 400.0, 0.5)
+    layout = new Layout.ForceDirected(graph, 300.0, 300.0, 0.5)
     currentBB = layout.getBoundingBox()
     self = this
     @_positioningPlanets = true
     layout.start `undefined`, ->
       layout.eachNode (node, point) ->
         size = currentBB.topright.subtract(currentBB.bottomleft)
-        sx = point.p.subtract(currentBB.bottomleft).divide(size.x).x * self.scene.domElement.clientWidth
-        sy = point.p.subtract(currentBB.bottomleft).divide(size.y).y * self.scene.domElement.clientHeight
+        sx = point.p.subtract(currentBB.bottomleft).divide(size.x).x * (self.scene.domElement.clientWidth - 100)
+        sy = point.p.subtract(currentBB.bottomleft).divide(size.y).y * (self.scene.domElement.clientHeight - 100)
         node.data.x = sx
         node.data.y = sy
       self._positioningPlanets = false

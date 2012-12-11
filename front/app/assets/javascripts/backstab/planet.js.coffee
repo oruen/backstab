@@ -16,7 +16,7 @@ class backstab.Planet
 
   draw: ->
     planet = new lime.Layer().setPosition(@x, @y)
-    circle = new lime.Circle().setSize(150, 150).setFill(255, 150, 0)
+    circle = new lime.Circle().setSize(120, 120).setFill(255, 150, 0)
     base = undefined
     lbl = new lime.Label().setSize(160, 50).setFontSize(30).setText(@quantity + "/" + @capacity)
     circle.appendChild lbl
