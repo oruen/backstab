@@ -49,3 +49,6 @@ backstab.EventHandler = (wsHandler) ->
     existingPlanet.setQuantity(planet.quantity)
     existingPlanet.setUser(planet.userId)
 
+  wsHandler.addEventListener backstab.WsHandler.EventType.VICTORY, (event) ->
+    console.log "Victory", event.target.value
+

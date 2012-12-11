@@ -85,7 +85,21 @@ handle_info({timeout, _Ref, {Quantity, UserId, Dest}}, State) ->
     end,
     digraph:add_vertex(Map, Dest, Planet1),
     send_all({send, planet, Planet1}, State),
+    erlang:start_timer(3000, self(), check_victory),
     {noreply, State};
+handle_info({timeout, _Ref, check_victory}, State) ->
+    {_, Map} = lists:keyfind(map, 1, State),
+    UserIds = lists:map(fun(V) ->
+        {_, Planet} = digraph:vertex(Map, V),
+        [Planet#planet.user_id]
+    end, digraph:vertices(Map)),
+    FilteredIds = lists:filter(fun(E) -> E /= false end, lists:umerge(UserIds)),
+    case erlang:length(FilteredIds) of
+        1 ->
+            send_all({send, victory, lists:last(FilteredIds)}, State),
+            {stop, normal, State};
+        _Else -> {noreply, State}
+    end;
 handle_info({timeout, _Ref, planets_growth}, State) ->
     {_, Map} = lists:keyfind(map, 1, State),
     Planets = lists:filter(fun(Planet) ->
