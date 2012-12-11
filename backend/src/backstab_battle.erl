@@ -84,23 +84,27 @@ handle_info({timeout, _Ref, {Quantity, UserId, Dest}}, State) ->
     {noreply, State};
 handle_info({timeout, _Ref, planets_growth}, State) ->
     {_, Map} = lists:keyfind(map, 1, State),
-    Planets = lists:map(fun(V) -> {_, Planet} = digraph:vertex(Map, V), Planet end, digraph:vertices(Map)),
+    Planets = lists:filter(fun(Planet) ->
+         Planet#planet.user_id == false andalso Planet#planet.quantity < Planet#planet.capacity
+    end, lists:map(fun(V) -> {_, Planet} = digraph:vertex(Map, V), Planet end, digraph:vertices(Map))),
     Msgs = lists:map(fun(Planet) ->
         Quantity = Planet#planet.quantity + 1,
         digraph:add_vertex(Map, Planet#planet.id, Planet#planet{quantity = Quantity}),
         {Planet#planet.id, Quantity}
-    end, lists:filter(fun(P) -> P#planet.user_id == false end, Planets)),
+    end, Planets),
     send_all({send, population, Msgs}, State),
     erlang:start_timer(?PLANET_GROWTH_TIMEOUT, self(), planets_growth),
     {noreply, State};
 handle_info({timeout, _Ref, player_planets_growth}, State) ->
     {_, Map} = lists:keyfind(map, 1, State),
-    Planets = lists:map(fun(V) -> {_, Planet} = digraph:vertex(Map, V), Planet end, digraph:vertices(Map)),
+    Planets = lists:filter(fun(Planet) ->
+         Planet#planet.user_id /= false andalso Planet#planet.quantity < Planet#planet.capacity
+    end, lists:map(fun(V) -> {_, Planet} = digraph:vertex(Map, V), Planet end, digraph:vertices(Map))),
     Msgs = lists:map(fun(Planet) ->
         Quantity = Planet#planet.quantity + 1,
         digraph:add_vertex(Map, Planet#planet.id, Planet#planet{quantity = Quantity}),
         {Planet#planet.id, Quantity}
-    end, lists:filter(fun(P) -> P#planet.user_id /= false end, Planets)),
+    end, Planets),
     send_all({send, population, Msgs}, State),
     erlang:start_timer(?PLAYER_PLANET_GROWTH_TIMEOUT, self(), player_planets_growth),
     {noreply, State};
