@@ -31,6 +31,7 @@ class backstab.Planet
 
   setQuantity: (val)->
     @quantity = val
+    return unless @node
     if @userId
       @baseNode.getChildAt(1).setText(val + '')
     @node.getChildAt(0).getChildAt(0).setText(val + '')
