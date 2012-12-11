@@ -8,16 +8,6 @@ goog.require('goog.events.EventTarget');
 backstab.WsHandler = function(token) {
   this.token = token;
   goog.events.EventTarget.call(this);
-  this.reader = new FileReader();
-  this.reader.onload = goog.bind(function(event) {
-    var decodedMsg = Bert.decode(event.target.result);
-    console.log("Msg unpacked", decodedMsg);
-    var event = new goog.events.Event(backstab.WsHandler.EventType[decodedMsg[0].value.toUpperCase()], decodedMsg[1]);
-    this.dispatchEvent(event);
-  }, this);
-  this.reader.onerror = function() {
-    console.log("File read error", arguments);
-  };
 }
 
 goog.inherits(backstab.WsHandler, goog.events.EventTarget);
@@ -35,7 +25,17 @@ backstab.WsHandler.prototype.onOpen = function() {
 
 backstab.WsHandler.prototype.onMessage = function(msg) {
   console.log("Message came", msg);
-  this.reader.readAsBinaryString(msg.message);
+  var reader = new FileReader();
+  reader.onload = goog.bind(function(event) {
+    var decodedMsg = Bert.decode(event.target.result);
+    console.log("Msg unpacked", decodedMsg);
+    var event = new goog.events.Event(backstab.WsHandler.EventType[decodedMsg[0].value.toUpperCase()], decodedMsg[1]);
+    this.dispatchEvent(event);
+  }, this);
+  reader.onerror = function() {
+    console.log("File read error", arguments);
+  };
+  reader.readAsBinaryString(msg.message);
 };
 
 backstab.WsHandler.prototype.onClose = function() {
