@@ -42,3 +42,10 @@ backstab.EventHandler = (wsHandler) ->
       population = e[1]
       planet.setQuantity(population)
 
+  wsHandler.addEventListener backstab.WsHandler.EventType.PLANET, (event) ->
+    planet = new backstab.Planet(event.target)
+    console.log "Planet", planet
+    existingPlanet = backstab.currentMap.planetById(planet.id)
+    existingPlanet.setQuantity(planet.quantity)
+    existingPlanet.setUser(planet.userId)
+

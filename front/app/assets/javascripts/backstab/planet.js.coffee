@@ -29,12 +29,20 @@ class backstab.Planet
       circle.runAction new lime.animation.ColorTo(255, 150, 0).setDuration(.1)
     planet
 
-  setQuantity: (val)->
+  setQuantity: (val) ->
     @quantity = val
     return unless @node
     if @userId
       @baseNode.getChildAt(1).setText(val + '')
     @node.getChildAt(0).getChildAt(0).setText(val + '')
+
+  setUser: (userId) ->
+    if userId != @userId
+      if @userId
+        @baseNode.getParent().removeChild(@baseNode)
+        @baseNode = null
+      @userId = userId
+      backstab.scene.appendChild @drawBase()
 
   drawBase: ->
     # create planetbase

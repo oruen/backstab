@@ -72,15 +72,19 @@ handle_info({'EXIT', _Pid, Reason}, State) ->
 handle_info({timeout, _Ref, {Quantity, UserId, Dest}}, State) ->
     {_, Map} = lists:keyfind(map, 1, State),
     {_, Planet} = digraph:vertex(Map, Dest),
-    Quantity1 = case UserId == Planet#planet.user_id of
+    Planet1 = case UserId == Planet#planet.user_id of
         true ->
-            Quantity + Planet#planet.quantity;
+            Planet#planet{quantity = Quantity + Planet#planet.quantity};
         false ->
-            Planet#planet.quantity - Quantity
+            if
+                Planet#planet.quantity - Quantity < 1 ->
+                    Planet#planet{user_id = UserId, quantity = Quantity - Planet#planet.quantity};
+                true ->
+                    Planet#planet{quantity = Planet#planet.quantity - Quantity}
+            end
     end,
-    Planet1 = Planet#planet{quantity = Quantity1},
     digraph:add_vertex(Map, Dest, Planet1),
-    send_all({send, population, [{Dest, Quantity1}]}, State),
+    send_all({send, planet, Planet1}, State),
     {noreply, State};
 handle_info({timeout, _Ref, planets_growth}, State) ->
     {_, Map} = lists:keyfind(map, 1, State),
