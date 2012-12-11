@@ -25,6 +25,8 @@ init({MapId, UserId, UserSocket}) ->
              {players, [[{id, UserId}, {socket, UserSocket}]]}],
     PopulatedPlanetSystem = PlanetSystem#planet_system{map = backstab_maps:to_front(Graph)},
     erlang:start_timer(100, UserSocket, {send, map, PopulatedPlanetSystem}),
+    erlang:start_timer(?PLANET_GROWTH_TIMEOUT, self(), planets_growth),
+    erlang:start_timer(?PLAYER_PLANET_GROWTH_TIMEOUT, self(), player_planets_growth),
     {ok, State}.
 
 build_digraph(Map) ->
@@ -79,6 +81,28 @@ handle_info({timeout, _Ref, {Quantity, UserId, Dest}}, State) ->
     Planet1 = Planet#planet{quantity = Quantity1},
     digraph:add_vertex(Map, Dest, Planet1),
     send_all({send, population, [{Dest, Quantity1}]}, State),
+    {noreply, State};
+handle_info({timeout, _Ref, planets_growth}, State) ->
+    {_, Map} = lists:keyfind(map, 1, State),
+    Planets = lists:map(fun(V) -> {_, Planet} = digraph:vertex(Map, V), Planet end, digraph:vertices(Map)),
+    Msgs = lists:map(fun(Planet) ->
+        Quantity = Planet#planet.quantity + 1,
+        digraph:add_vertex(Map, Planet#planet.id, Planet#planet{quantity = Quantity}),
+        {Planet#planet.id, Quantity}
+    end, lists:filter(fun(P) -> P#planet.user_id == false end, Planets)),
+    send_all({send, population, Msgs}, State),
+    erlang:start_timer(?PLANET_GROWTH_TIMEOUT, self(), planets_growth),
+    {noreply, State};
+handle_info({timeout, _Ref, player_planets_growth}, State) ->
+    {_, Map} = lists:keyfind(map, 1, State),
+    Planets = lists:map(fun(V) -> {_, Planet} = digraph:vertex(Map, V), Planet end, digraph:vertices(Map)),
+    Msgs = lists:map(fun(Planet) ->
+        Quantity = Planet#planet.quantity + 1,
+        digraph:add_vertex(Map, Planet#planet.id, Planet#planet{quantity = Quantity}),
+        {Planet#planet.id, Quantity}
+    end, lists:filter(fun(P) -> P#planet.user_id /= false end, Planets)),
+    send_all({send, population, Msgs}, State),
+    erlang:start_timer(?PLAYER_PLANET_GROWTH_TIMEOUT, self(), player_planets_growth),
     {noreply, State};
 handle_info(_Cmd, State) ->
     {noreply, State}.

@@ -7,6 +7,8 @@
 -define(PLANET_CAPACITY_CONST, 15).
 -define(PLANET_MAX_QUANTITY_FACTOR, 3).
 -define(PLANET_QUANTITY_FACTOR, 5).
+-define(PLAYER_PLANET_GROWTH_TIMEOUT, 4000).
+-define(PLANET_GROWTH_TIMEOUT, 7000).
 
 -record(planet, {id        :: binary(),
                  type      :: binary(),
