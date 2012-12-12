@@ -42,19 +42,24 @@ stop() ->
 handle_call(_Cmd, _From, State) ->
     {ok, State}.
 
-handle_cast({goto, [From, To]}, State) ->
+handle_cast({{goto, [From, To]}, Player}, State) ->
     {_, Map} = lists:keyfind(map, 1, State),
-    case backstab_maps:planets_connected(From, To, Map) of
+    {_, PlanetFrom} = digraph:vertex(Map, From),
+    UserId = PlanetFrom#planet.user_id,
+    {_, InitUserId} = lists:keyfind(<<"email">>, 1, Player),
+    case UserId == InitUserId of
         true ->
-            {_, PlanetFrom} = digraph:vertex(Map, From),
-            digraph:add_vertex(Map, From, PlanetFrom#planet{quantity = 0}),
-            send_all({send, population, [{From, 0}]}, State),
-            send_all({send, goto, [From, To]}, State),
-            Quantity = PlanetFrom#planet.quantity,
-            UserId = PlanetFrom#planet.user_id,
-            erlang:start_timer(1000, self(), {Quantity, UserId, To});
-        false -> ok
-    end,
+            case backstab_maps:planets_connected(From, To, Map) of
+                true ->
+                    digraph:add_vertex(Map, From, PlanetFrom#planet{quantity = 0}),
+                    send_all({send, population, [{From, 0}]}, State),
+                    send_all({send, goto, [From, To]}, State),
+                    Quantity = PlanetFrom#planet.quantity,
+                    erlang:start_timer(1000, self(), {Quantity, UserId, To});
+                false -> ok
+            end;
+         false -> ok
+     end,
     {noreply, State};
 handle_cast(_Cmd, State) ->
     {noreply, State}.

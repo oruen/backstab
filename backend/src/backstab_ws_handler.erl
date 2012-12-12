@@ -36,7 +36,8 @@ message_handle({global, fight, MapId}, Req, State) ->
 
 message_handle(Msg, Req, State) ->
     {_, Battle} = lists:keyfind(battle, 1, State),
-    gen_server:cast(Battle, Msg),
+    {_, Userinfo} = lists:keyfind(player, 1, State),
+    gen_server:cast(Battle, {Msg, Userinfo}),
     {ok, Req, State}.
 
 websocket_info({timeout, _Ref, {global, init}}, Req, State) ->
