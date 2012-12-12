@@ -1,4 +1,3 @@
-= link_to "Logout", destroy_user_session_path, :class => "btn", :method => :delete
 = stylesheet_link_tag "battles"
 
 .modal.js-planetinfo.fade.hide
@@ -10,6 +9,17 @@
   .modal-footer
     %button.btn{"aria-hidden" => "true", "data-dismiss" => "modal", :type => "button"} Withdraw
     %button.btn.btn-danger.js-attack Attack!
+
+
+.span1
+  = link_to "Logout", destroy_user_session_path, :class => "btn", :method => :delete
+
+.alert.alert-error.span3.hide
+  %button.close{:type => "button", "data-dismiss" => "alert"}×
+  %h4 Your Base is under attack!
+  %p
+  %p
+    %button.btn.btn-danger Fight
 
 = javascript_tag do
   window.Userinfo = {token: "#{current_user.id}", id: "#{current_user.email}"};
