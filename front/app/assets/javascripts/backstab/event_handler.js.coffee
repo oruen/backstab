@@ -3,6 +3,12 @@ goog.provide("backstab.EventHandler")
 backstab.EventHandler = (wsHandler) ->
   wsHandler.addEventListener backstab.WsHandler.EventType.MAP, (event) ->
     console.log "Time to draw"
+    goog.style.showElement goog.dom.getElementByClass("global-map"), false
+    backstab.director = new lime.Director(document.body, 1024, 768)
+    backstab.scene = new lime.Scene()
+    #scene.setRenderer(lime.Renderer.CANVAS);
+    backstab.director.makeMobileWebAppCapable()
+    backstab.director.replaceScene backstab.scene
     planetSystem = new backstab.PlanetSystem(event.target)
     backstab.currentMap = new backstab.BattleMap(planetSystem, backstab.scene)
     backstab.currentMap.render()

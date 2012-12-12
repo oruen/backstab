@@ -24,22 +24,16 @@ goog.require('goog.dom.dataset')
 backstab.start = ->
   attackButton = goog.dom.getElementByClass('js-attack')
   goog.events.listen attackButton, goog.events.EventType.CLICK, ->
-    backstab.prepareFight(goog.dom.dataset.getAll(attackButton))
+    backstab.requestFight(goog.dom.dataset.getAll(attackButton))
   backstab.currentMap = null
   backstab.wsHandler = new backstab.WsHandler(Userinfo.token)
   new backstab.EventHandler(backstab.wsHandler)
   backstab.wsHandler.connect()
 
-backstab.prepareFight = (params)->
-  goog.style.showElement goog.dom.getElementByClass("global-map"), false
+backstab.requestFight = (params) ->
   planetSystemId = params["planetsystemid"]
-  $(".js-planetinfo").modal('hide')
   @send Bert.tuple(Bert.atom("global"), Bert.atom("fight"), Bert.binary(planetSystemId))
-  backstab.director = new lime.Director(document.body, 1024, 768)
-  @scene = new lime.Scene()
-  #scene.setRenderer(lime.Renderer.CANVAS);
-  @director.makeMobileWebAppCapable()
-  @director.replaceScene @scene
+  $(".js-planetinfo").modal('hide')
 
 backstab.send = (msg) ->
   @wsHandler.send msg
