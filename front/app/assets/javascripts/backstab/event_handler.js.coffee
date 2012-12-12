@@ -58,3 +58,8 @@ backstab.EventHandler = (wsHandler) ->
   wsHandler.addEventListener backstab.WsHandler.EventType.VICTORY, (event) ->
     console.log "Victory", event.target.value
 
+  wsHandler.addEventListener backstab.WsHandler.EventType.ASSAULT, (event) ->
+    button = goog.dom.getElementByClass("js-defend")
+    goog.dom.dataset.set button, "battleid", event.target.value
+    $(".js-defendalert").removeClass("hide")
+

@@ -27,6 +27,9 @@ init({MapId, UserId, UserSocket}) ->
     erlang:start_timer(100, UserSocket, {send, map, PopulatedPlanetSystem}),
     erlang:start_timer(?PLANET_GROWTH_TIMEOUT, self(), planets_growth),
     erlang:start_timer(?PLAYER_PLANET_GROWTH_TIMEOUT, self(), player_planets_growth),
+    % Send planet host an invitation
+    Msg = {defend, PlanetSystem#planet_system.user_id, list_to_binary(pid_to_list(self()))},
+    gproc:send({p, l, PlanetSystem#planet_system.user_id}, Msg),
     {ok, State}.
 
 build_digraph(Map) ->
@@ -39,8 +42,16 @@ build_digraph(Map) ->
 stop() ->
     ok.
 
+handle_call({enter_battle, Email}, From, State) ->
+    {_, Players} = lists:keyfind(players, 1, State),
+    {UserSocket, _} = From,
+    Players1 = [[{id, Email}, {socket, UserSocket}] | Players],
+    State1 = lists:keystore(players, 1, State, {players, Players1}),
+    {_, Map} = lists:keyfind(map, 1, State),
+    erlang:start_timer(0, UserSocket, {send, map, #planet_system{user_id = Email, map = backstab_maps:to_front(Map)}}),
+    {reply, ok, State1};
 handle_call(_Cmd, _From, State) ->
-    {ok, State}.
+    {noreply, ok, State}.
 
 handle_cast({{goto, [From, To]}, Player}, State) ->
     {_, Map} = lists:keyfind(map, 1, State),

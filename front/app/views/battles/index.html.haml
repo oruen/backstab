@@ -14,12 +14,12 @@
 .span1
   = link_to "Logout", destroy_user_session_path, :class => "btn", :method => :delete
 
-.alert.alert-error.span3.hide
+.alert.alert-error.span3.hide.js-defendalert
   %button.close{:type => "button", "data-dismiss" => "alert"}×
   %h4 Your Base is under attack!
   %p
   %p
-    %button.btn.btn-danger Fight
+    %button.btn.btn-danger.js-defend Fight
 
 = javascript_tag do
   window.Userinfo = {token: "#{current_user.id}", id: "#{current_user.email}"};

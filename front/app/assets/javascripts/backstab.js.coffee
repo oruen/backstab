@@ -23,8 +23,11 @@ goog.require('goog.dom.dataset')
 # entrypoint
 backstab.start = ->
   attackButton = goog.dom.getElementByClass('js-attack')
+  defendButton = goog.dom.getElementByClass('js-defend')
   goog.events.listen attackButton, goog.events.EventType.CLICK, ->
     backstab.requestFight(goog.dom.dataset.getAll(attackButton))
+  goog.events.listen defendButton, goog.events.EventType.CLICK, ->
+    backstab.requestDefence(goog.dom.dataset.getAll(defendButton))
   backstab.currentMap = null
   backstab.wsHandler = new backstab.WsHandler(Userinfo.token)
   new backstab.EventHandler(backstab.wsHandler)
@@ -34,6 +37,12 @@ backstab.requestFight = (params) ->
   planetSystemId = params["planetsystemid"]
   @send Bert.tuple(Bert.atom("global"), Bert.atom("fight"), Bert.binary(planetSystemId))
   $(".js-planetinfo").modal('hide')
+
+backstab.requestDefence = (params) ->
+  battleid = params["battleid"]
+  console.log params, battleid
+  @send Bert.tuple(Bert.atom("global"), Bert.atom("defend"), Bert.binary(battleid))
+  $(".js-defendalert").alert("close")
 
 backstab.send = (msg) ->
   @wsHandler.send msg

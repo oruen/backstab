@@ -13,6 +13,8 @@ websocket_init(_TransportName, Req, _Opts) ->
     case riakc_pb_socket:get(RiakPid, <<"users">>, Token) of
         {ok, O} ->
             Userinfo = jsx:decode(riakc_obj:get_value(O)),
+            {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
+            gproc:reg({p, l, Email}),
             erlang:start_timer(0, self(), {global, init}),
             {ok, Req, [{riak, RiakPid}, {player, Userinfo}]};
         {error, notfound} ->
@@ -33,6 +35,13 @@ message_handle({global, fight, MapId}, Req, State) ->
     {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
     {ok, Pid} = supervisor:start_child(backstab_battle_sup, [{MapId, Email, self()}]),
     {ok, Req, [{battle, Pid} | State]};
+
+message_handle({global, defend, BattleId}, Req, State) ->
+    {_, Userinfo} = lists:keyfind(player, 1, State),
+    {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
+    Battle = list_to_pid(binary_to_list(BattleId)),
+    gen_server:call(Battle, {enter_battle, Email}),
+    {ok, Req, [{battle, Battle} | State]};
 
 message_handle(Msg, Req, State) ->
     {_, Battle} = lists:keyfind(battle, 1, State),
@@ -60,8 +69,16 @@ websocket_info({timeout, _Ref, {global, init}}, Req, State) ->
 websocket_info({timeout, _Ref, {send, Type, Data}}, Req, State) ->
     Msg = bert:encode({Type, Data}),
     {reply, {binary, Msg}, Req, State};
-websocket_info(_Info, Req, State) ->
-    {ok, Req, State}.
+websocket_info(Info, Req, State) ->
+    {_, Userinfo} = lists:keyfind(player, 1, State),
+    {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
+    ?PRINT(Info),
+    case Info of
+        {defend, Email, Address} ->
+            {reply, {binary, bert:encode({assault, Address})}, Req, State};
+        _ ->
+            {ok, Req, State}
+    end.
 
 websocket_terminate(_Reason, _Req, _State) ->
     ok.
