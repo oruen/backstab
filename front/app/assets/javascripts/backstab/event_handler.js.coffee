@@ -4,14 +4,18 @@ backstab.EventHandler = (wsHandler) ->
   wsHandler.addEventListener backstab.WsHandler.EventType.MAP, (event) ->
     console.log "Time to draw"
     goog.style.showElement goog.dom.getElementByClass("global-map"), false
-    backstab.director = new lime.Director(document.body, 1024, 768)
+    backstab.initDirector()
     backstab.scene = new lime.Scene()
     #scene.setRenderer(lime.Renderer.CANVAS);
-    backstab.director.makeMobileWebAppCapable()
     backstab.director.replaceScene backstab.scene
     planetSystem = new backstab.PlanetSystem(event.target)
     backstab.currentMap = new backstab.BattleMap(planetSystem, backstab.scene)
     backstab.currentMap.render()
+
+  wsHandler.addEventListener backstab.WsHandler.EventType.VICTORY, (event) ->
+    console.log "Victory", event.target.value
+    goog.style.showElement goog.dom.getElementByClass("lime-director"), true
+    goog.style.showElement goog.dom.getElementByClass("global-map"), true
 
   wsHandler.addEventListener backstab.WsHandler.EventType.GLOBAL_MAP, (event) ->
     console.log "Global map"
@@ -54,9 +58,6 @@ backstab.EventHandler = (wsHandler) ->
     existingPlanet = backstab.currentMap.planetById(planet.id)
     existingPlanet.setQuantity(planet.quantity)
     existingPlanet.setUser(planet.userId)
-
-  wsHandler.addEventListener backstab.WsHandler.EventType.VICTORY, (event) ->
-    console.log "Victory", event.target.value
 
   wsHandler.addEventListener backstab.WsHandler.EventType.ASSAULT, (event) ->
     button = goog.dom.getElementByClass("js-defend")

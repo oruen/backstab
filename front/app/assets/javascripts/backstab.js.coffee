@@ -33,6 +33,13 @@ backstab.start = ->
   new backstab.EventHandler(backstab.wsHandler)
   backstab.wsHandler.connect()
 
+backstab.initDirector = ->
+  if @director
+    goog.style.showElement goog.dom.getElementByClass("lime-director"), true
+  else
+    @director = new lime.Director(document.body, 1024, 768)
+    @director.makeMobileWebAppCapable()
+
 backstab.requestFight = (params) ->
   planetSystemId = params["planetsystemid"]
   @send Bert.tuple(Bert.atom("global"), Bert.atom("fight"), Bert.binary(planetSystemId))
