@@ -16,7 +16,8 @@ websocket_init(_TransportName, Req, _Opts) ->
             {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
             gproc:reg({p, l, Email}),
             erlang:start_timer(0, self(), {global, init}),
-            {ok, Req, [{riak, RiakPid}, {player, Userinfo}]};
+            State = dict:store(battle, false, dict:store(player, Userinfo, dict:store(riak, RiakPid, dict:new()))),
+            {ok, Req, State};
         {error, notfound} ->
             {stop, Req, []}
     end.
@@ -31,31 +32,31 @@ websocket_handle(_Data, Req, State) ->
     {ok, Req, State}.
 
 message_handle({global, fight, MapId}, Req, State) ->
-    {_, Userinfo} = lists:keyfind(player, 1, State),
+    Userinfo= dict:fetch(player, State),
     {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
     {ok, Pid} = supervisor:start_child(backstab_battle_sup, [{MapId, Email, self()}]),
-    {ok, Req, [{battle, Pid} | State]};
+    {ok, Req, dict:store(battle, Pid, State)};
 
 message_handle({global, defend, BattleId}, Req, State) ->
-    {_, Userinfo} = lists:keyfind(player, 1, State),
+    Userinfo = dict:fetch(player, State),
     {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
     Battle = list_to_pid(binary_to_list(BattleId)),
     case is_process_alive(Battle) of
         true ->
             gen_server:call(Battle, {enter_battle, Email}),
-            {ok, Req, [{battle, Battle} | State]};
+            {ok, Req, dict:store(battle, Battle, State)};
         false ->
             {ok, Req, State}
     end;
 
 message_handle(Msg, Req, State) ->
-    {_, Battle} = lists:keyfind(battle, 1, State),
-    {_, Userinfo} = lists:keyfind(player, 1, State),
+    Battle = dict:fetch(battle, State),
+    Userinfo = dict:fetch(player, State),
     gen_server:cast(Battle, {Msg, Userinfo}),
     {ok, Req, State}.
 
 websocket_info({timeout, _Ref, {global, init}}, Req, State) ->
-    {_, RiakPid} = lists:keyfind(riak, 1, State),
+    RiakPid = dict:fetch(riak, State),
     {ok, UserKeys} = riakc_pb_socket:list_keys(RiakPid, <<"users">>),
     Users = lists:map(fun(K) ->
           {ok, O} = riakc_pb_socket:get(RiakPid, <<"users">>, K),
@@ -75,7 +76,7 @@ websocket_info({timeout, _Ref, {send, Type, Data}}, Req, State) ->
     Msg = bert:encode({Type, Data}),
     {reply, {binary, Msg}, Req, State};
 websocket_info(Info, Req, State) ->
-    {_, Userinfo} = lists:keyfind(player, 1, State),
+    Userinfo = dict:fetch(player, State),
     {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
     ?PRINT(Info),
     case Info of
