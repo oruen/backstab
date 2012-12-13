@@ -9,20 +9,12 @@ init({tcp, http}, _Req, _Opts) ->
 
 websocket_init(_TransportName, Req, _Opts) ->
     {Token, _} = cowboy_req:qs_val(<<"token">>, Req),
-    {ok, RiakPid} = riakc_pb_socket:start_link("127.0.0.1", 8087),
-    case riakc_pb_socket:get(RiakPid, <<"users">>, Token) of
-        {ok, O} ->
-            Userinfo = jsx:decode(riakc_obj:get_value(O)),
-            {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
-            gproc:reg({p, l, Email}),
-            erlang:start_timer(0, self(), {global, init}),
-            State = dict:store(battle, false, dict:store(player, Userinfo, dict:store(riak, RiakPid, dict:new()))),
-            {ok, Req, State};
-        {error, notfound} ->
-            {stop, Req, []}
-    end.
-    %{ok, Pid} = supervisor:start_child(backstab_battle_sup, [{<<"map-id">>, <<"1">>, self()}]),
-    %{ok, Req, Pid}.
+    {ok, Userinfo} = backstab_galaxy:user(Token),
+    {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
+    gproc:reg({p, l, Email}),
+    erlang:start_timer(0, self(), {global, init}),
+    State = dict:store(battle, false, dict:store(player, Userinfo, dict:new())),
+    {ok, Req, State}.
 
 websocket_handle({binary, <<_Ws, Msg/binary>>}, Req, State) ->
     DecodedMsg = bert:decode(Msg),
@@ -56,19 +48,8 @@ message_handle(Msg, Req, State) ->
     {ok, Req, State}.
 
 websocket_info({timeout, _Ref, {global, init}}, Req, State) ->
-    RiakPid = dict:fetch(riak, State),
-    {ok, UserKeys} = riakc_pb_socket:list_keys(RiakPid, <<"users">>),
-    Users = lists:map(fun(K) ->
-          {ok, O} = riakc_pb_socket:get(RiakPid, <<"users">>, K),
-          Value = riakc_obj:get_value(O),
-          lists:filter(fun({E,  _}) -> lists:member(E, [<<"email">>, <<"name">>, <<"color">>]) end, jsx:decode(Value))
-      end, UserKeys),
-    {ok, MapKeys} = riakc_pb_socket:list_keys(RiakPid, <<"maps">>),
-    Maps = lists:map(fun(K) ->
-          {ok, O} = riakc_pb_socket:get(RiakPid, <<"maps">>, K),
-          Value = riakc_obj:get_value(O),
-          bert:decode(Value)
-      end, MapKeys),
+    Users = backstab_galaxy:users(),
+    Maps = backstab_galaxy:maps(),
     erlang:start_timer(0, self(), {send, global_map, [Users, Maps]}),
     {ok, Req, State};
 
@@ -81,7 +62,6 @@ websocket_info(battle_finish, Req, State) ->
 websocket_info(Info, Req, State) ->
     Userinfo = dict:fetch(player, State),
     {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
-    ?PRINT(Info),
     case Info of
         {defend, Email, Address} ->
             {reply, {binary, bert:encode({assault, Address})}, Req, State};

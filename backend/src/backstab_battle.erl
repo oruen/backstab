@@ -11,8 +11,7 @@ start_link(Args) ->
 init({MapId, UserId, UserSocket}) ->
     link(UserSocket),
     process_flag(trap_exit, true),
-    {ok, RiakPid} = riakc_pb_socket:start_link("127.0.0.1", 8087),
-    {ok, PlanetSystem} = backstab_maps:load(MapId, RiakPid),
+    {ok, PlanetSystem} = backstab_maps:load(MapId),
     Map = PlanetSystem#planet_system.map,
     {planets, Planets} = lists:keyfind(planets, 1, Map),
     Defender = lists:nth(1, Planets),
@@ -21,7 +20,6 @@ init({MapId, UserId, UserSocket}) ->
     digraph:add_vertex(Graph, Defender#planet.id, Defender#planet{quantity = ?PLAYER_START_POPULATION, user_id = PlanetSystem#planet_system.user_id}),
     digraph:add_vertex(Graph, Attacker#planet.id, Attacker#planet{quantity = ?PLAYER_START_POPULATION, user_id = UserId}),
     State = [{map, Graph},
-             {riak, RiakPid},
              {players, [[{id, UserId}, {socket, UserSocket}]]}],
     PopulatedPlanetSystem = PlanetSystem#planet_system{map = backstab_maps:to_front(Graph)},
     erlang:start_timer(100, UserSocket, {send, map, PopulatedPlanetSystem}),

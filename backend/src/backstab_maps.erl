@@ -1,10 +1,9 @@
 -module(backstab_maps).
--export([load/2, random/0, create_random/1, to_front/1, store/3, planets_connected/3]).
+-export([load/1, random/0, create_random/1, to_front/1, store/3, planets_connected/3]).
 -include("backstab.hrl").
 
-load(MapId, RiakPid) ->
-  {ok, O} = riakc_pb_socket:get(RiakPid, <<"maps">>, MapId),
-  PlanetSystem = bert:decode(riakc_obj:get_value(O)),
+load(MapId) ->
+  {ok, PlanetSystem} = backstab_galaxy:map(MapId),
   {ok, PlanetSystem}.
 
 create_random(Num) ->

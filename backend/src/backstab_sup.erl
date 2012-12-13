@@ -29,5 +29,6 @@ start_link() ->
 init([]) ->
     Server = ?CHILD(backstab_server, worker),
     BattleSup = ?CHILD(backstab_battle_sup, supervisor),
-    {ok, { {one_for_one, 5, 10}, [Server, BattleSup]} }.
+    Galaxy = ?CHILD(backstab_galaxy, worker),
+    {ok, { {one_for_one, 5, 10}, [Server, BattleSup, Galaxy]} }.
 
