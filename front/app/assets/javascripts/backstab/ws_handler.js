@@ -50,7 +50,7 @@ backstab.WsHandler.prototype.connect = function() {
   goog.events.listen(this._ws, goog.net.WebSocket.EventType.OPENED, this.onOpen);
   goog.events.listen(this._ws, goog.net.WebSocket.EventType.MESSAGE, goog.bind(this.onMessage, this));
   goog.events.listen(this._ws, goog.net.WebSocket.EventType.CLOSED, this.onClose);
-  this._ws.open("ws://localhost:8080/ws?token=" + this.token);
+  this._ws.open("ws://" + document.location.hostname + ":8080/ws?token=" + this.token);
 };
 
 backstab.WsHandler.prototype.send = function(msg) {
