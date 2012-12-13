@@ -165,7 +165,12 @@ handle_info({timeout, _Ref, player_planets_growth}, State) ->
 handle_info(_Cmd, State) ->
     {noreply, State}.
 
-terminate(_Type, _State) ->
+terminate(_Type, State) ->
+    {_, Players} = lists:keyfind(players, 1, State),
+    lists:map(fun(Player) ->
+        {_, UserSocket} = lists:keyfind(socket, 1, Player),
+        UserSocket ! battle_finish
+    end, Players),
     ok.
 
 code_change(_OldVsn, State, _Extra) ->

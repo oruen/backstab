@@ -75,6 +75,9 @@ websocket_info({timeout, _Ref, {global, init}}, Req, State) ->
 websocket_info({timeout, _Ref, {send, Type, Data}}, Req, State) ->
     Msg = bert:encode({Type, Data}),
     {reply, {binary, Msg}, Req, State};
+websocket_info(battle_finish, Req, State) ->
+    State1 = dict:store(battle, false, State),
+    {ok, Req, State1};
 websocket_info(Info, Req, State) ->
     Userinfo = dict:fetch(player, State),
     {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
