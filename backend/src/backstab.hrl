@@ -9,6 +9,7 @@
 -define(PLANET_QUANTITY_FACTOR, 5).
 -define(PLAYER_PLANET_GROWTH_TIMEOUT, 4000).
 -define(PLANET_GROWTH_TIMEOUT, 7000).
+-define(PLAYER_START_POPULATION, 15).
 
 -record(planet, {id        :: binary(),
                  type      :: binary(),
