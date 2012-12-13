@@ -40,8 +40,13 @@ message_handle({global, defend, BattleId}, Req, State) ->
     {_, Userinfo} = lists:keyfind(player, 1, State),
     {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
     Battle = list_to_pid(binary_to_list(BattleId)),
-    gen_server:call(Battle, {enter_battle, Email}),
-    {ok, Req, [{battle, Battle} | State]};
+    case is_process_alive(Battle) of
+        true ->
+            gen_server:call(Battle, {enter_battle, Email}),
+            {ok, Req, [{battle, Battle} | State]};
+        false ->
+            {ok, Req, State}
+    end;
 
 message_handle(Msg, Req, State) ->
     {_, Battle} = lists:keyfind(battle, 1, State),
