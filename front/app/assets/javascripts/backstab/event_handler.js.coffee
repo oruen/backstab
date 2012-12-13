@@ -18,8 +18,7 @@ backstab.EventHandler = (wsHandler) ->
       $(".js-victory").modal()
     else
       $(".js-defeat").modal()
-
-    goog.style.showElement goog.dom.getElementByClass("lime-director"), true
+    goog.style.showElement goog.dom.getElementByClass("lime-director"), false
     goog.style.showElement goog.dom.getElementByClass("global-map"), true
 
   wsHandler.addEventListener backstab.WsHandler.EventType.GLOBAL_MAP, (event) ->
