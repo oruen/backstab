@@ -14,6 +14,11 @@ backstab.EventHandler = (wsHandler) ->
 
   wsHandler.addEventListener backstab.WsHandler.EventType.VICTORY, (event) ->
     console.log "Victory", event.target.value
+    if Userinfo.id == event.target.value
+      $(".js-victory").modal()
+    else
+      $(".js-defeat").modal()
+
     goog.style.showElement goog.dom.getElementByClass("lime-director"), true
     goog.style.showElement goog.dom.getElementByClass("global-map"), true
 

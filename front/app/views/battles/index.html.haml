@@ -10,6 +10,15 @@
     %button.btn{"aria-hidden" => "true", "data-dismiss" => "modal", :type => "button"} Withdraw
     %button.btn.btn-danger.js-attack Attack!
 
+.modal.js-victory.fade.hide
+  .modal-header
+    %button.close{"aria-hidden" => "true", "data-dismiss" => "modal", :type => "button"} ×
+    %h3 You've win the battle!
+
+.modal.js-defeat.fade.hide
+  .modal-header
+    %button.close{"aria-hidden" => "true", "data-dismiss" => "modal", :type => "button"} ×
+    %h3 You've lost the battle.
 
 .span1
   = link_to "Logout", destroy_user_session_path, :class => "btn", :method => :delete
