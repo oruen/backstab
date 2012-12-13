@@ -45,6 +45,7 @@ stop() ->
 handle_call({enter_battle, Email}, From, State) ->
     {_, Players} = lists:keyfind(players, 1, State),
     {UserSocket, _} = From,
+    link(UserSocket),
     Players1 = [[{id, Email}, {socket, UserSocket}] | Players],
     State1 = lists:keystore(players, 1, State, {players, Players1}),
     {_, Map} = lists:keyfind(map, 1, State),
@@ -83,8 +84,27 @@ send_all(Msg, State) ->
     end, Players).
 
 % Interrupt battle on gamer disconnect.
-handle_info({'EXIT', _Pid, Reason}, State) ->
-    {stop, Reason, State};
+handle_info({'EXIT', Pid, normal}, State) ->
+    % {players, [[{id, UserId}, {socket, UserSocket}]]}
+    {_, Players} = lists:keyfind(players, 1, State),
+    Players1 = lists:filter(fun(Player) ->
+        case Player of
+            [{id, _}, {socket, Pid}] ->
+                false;
+            _ ->
+                true
+        end
+    end, Players),
+    State1 = lists:keystore(players, 1, State, {players, Players1}),
+    case length(Players1) > 0 of
+        true ->
+            ?PRINT("Player left battle"),
+            {noreply, State1};
+        false ->
+            ?PRINT("Killing time"),
+            {stop, normal, State1}
+    end;
+
 handle_info({timeout, _Ref, {Quantity, UserId, Dest}}, State) ->
     {_, Map} = lists:keyfind(map, 1, State),
     {_, Planet} = digraph:vertex(Map, Dest),
