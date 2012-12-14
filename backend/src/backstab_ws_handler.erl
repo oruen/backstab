@@ -25,17 +25,15 @@ websocket_handle(_Data, Req, State) ->
 
 message_handle({global, fight, MapId}, Req, State) ->
     Userinfo= dict:fetch(player, State),
-    {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
-    {ok, Pid} = supervisor:start_child(backstab_battle_sup, [{MapId, Email, self()}]),
+    {ok, Pid} = supervisor:start_child(backstab_battle_sup, [{MapId, Userinfo, self()}]),
     {ok, Req, dict:store(battle, Pid, State)};
 
 message_handle({global, defend, BattleId}, Req, State) ->
     Userinfo = dict:fetch(player, State),
-    {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
     Battle = list_to_pid(binary_to_list(BattleId)),
     case is_process_alive(Battle) of
         true ->
-            gen_server:call(Battle, {enter_battle, Email}),
+            gen_server:call(Battle, {enter_battle, Userinfo}),
             {ok, Req, dict:store(battle, Battle, State)};
         false ->
             {ok, Req, State}

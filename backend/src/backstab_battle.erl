@@ -8,7 +8,7 @@
 start_link(Args) ->
     gen_server:start_link(?MODULE, Args, []).
 
-init({MapId, UserId, UserSocket}) ->
+init({MapId, Userinfo, UserSocket}) ->
     link(UserSocket),
     process_flag(trap_exit, true),
     {ok, PlanetSystem} = backstab_maps:load(MapId),
@@ -17,10 +17,11 @@ init({MapId, UserId, UserSocket}) ->
     Defender = lists:nth(1, Planets),
     Attacker = lists:last(Planets),
     Graph = build_digraph(Map),
+    {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
     digraph:add_vertex(Graph, Defender#planet.id, Defender#planet{quantity = ?PLAYER_START_POPULATION, user_id = PlanetSystem#planet_system.user_id}),
-    digraph:add_vertex(Graph, Attacker#planet.id, Attacker#planet{quantity = ?PLAYER_START_POPULATION, user_id = UserId}),
+    digraph:add_vertex(Graph, Attacker#planet.id, Attacker#planet{quantity = ?PLAYER_START_POPULATION, user_id = Email}),
     State = [{map, Graph},
-             {players, [[{id, UserId}, {socket, UserSocket}]]}],
+             {players, [[{user, Userinfo}, {socket, UserSocket}]]}],
     PopulatedPlanetSystem = PlanetSystem#planet_system{map = backstab_maps:to_front(Graph)},
     erlang:start_timer(100, UserSocket, {send, map, PopulatedPlanetSystem}),
     erlang:start_timer(?PLANET_GROWTH_TIMEOUT, self(), planets_growth),
@@ -40,13 +41,14 @@ build_digraph(Map) ->
 stop() ->
     ok.
 
-handle_call({enter_battle, Email}, From, State) ->
+handle_call({enter_battle, Userinfo}, From, State) ->
     {_, Players} = lists:keyfind(players, 1, State),
     {UserSocket, _} = From,
     link(UserSocket),
-    Players1 = [[{id, Email}, {socket, UserSocket}] | Players],
+    Players1 = [[{user, Userinfo}, {socket, UserSocket}] | Players],
     State1 = lists:keystore(players, 1, State, {players, Players1}),
     {_, Map} = lists:keyfind(map, 1, State),
+    {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
     erlang:start_timer(0, UserSocket, {send, map, #planet_system{user_id = Email, map = backstab_maps:to_front(Map)}}),
     {reply, ok, State1};
 handle_call(_Cmd, _From, State) ->
@@ -87,7 +89,7 @@ handle_info({'EXIT', Pid, normal}, State) ->
     {_, Players} = lists:keyfind(players, 1, State),
     Players1 = lists:filter(fun(Player) ->
         case Player of
-            [{id, _}, {socket, Pid}] ->
+            [{user, _}, {socket, Pid}] ->
                 false;
             _ ->
                 true
@@ -130,7 +132,9 @@ handle_info({timeout, _Ref, check_victory}, State) ->
     FilteredIds = lists:filter(fun(E) -> E /= false end, lists:umerge(UserIds)),
     case erlang:length(FilteredIds) of
         1 ->
-            send_all({send, victory, lists:last(FilteredIds)}, State),
+            %{_, Players} = lists:keyfind(players, 1, State),
+            UserIdWin = lists:last(FilteredIds),
+            send_all({send, victory, UserIdWin}, State),
             {stop, normal, State};
         _Else -> {noreply, State}
     end;
