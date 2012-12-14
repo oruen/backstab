@@ -51,6 +51,10 @@ backstab.requestDefence = (params) ->
   @send Bert.tuple(Bert.atom("global"), Bert.atom("defend"), Bert.binary(battleid))
   $(".js-defendalert").alert("close")
 
+backstab.updatePlanetSystem = (planetSystem) ->
+  existingPlanetSystem = @planetSystems.filter((e) -> e.id == planetSystem.id)[0]
+  existingPlanetSystem.updateUserId(planetSystem.userId)
+
 backstab.send = (msg) ->
   @wsHandler.send msg
 
@@ -76,13 +80,7 @@ backstab.renderGlobalMap = (planetSystems) ->
       x1 > nx2 or x2 < nx1 or y1 > ny2 or y2 < ny1
   width = 960
   height = 500
-  nodes = planetSystems.map((d) ->
-    radius: d.planets.length * 2 + 10
-    planetsCount: d.planets.length
-    userId: d.userId
-    color: "##{d.userId && backstab.players[d.userId].color || "EEE"}"
-    id: d.id
-  )
+  nodes = planetSystems.map((d) -> d.visData())
   force = d3.layout.force().gravity(0.02).charge(-100).nodes(nodes).size([width, height])
   force.start()
   svg = d3.select("body").append("svg").attr("width", width).attr("height", height).classed("global-map", true)

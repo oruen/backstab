@@ -103,6 +103,7 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 handle_info({timeout, _Ref, {store_map, PlanetSystem}}, State) ->
+    gproc:send({p, l, ws_client}, {planet_system, PlanetSystem}),
     Store = dict:fetch(riak, State),
     Object = riakc_obj:new(<<"maps">>, PlanetSystem#planet_system.id, bert:encode(PlanetSystem)),
     riakc_pb_socket:put(Store, Object),

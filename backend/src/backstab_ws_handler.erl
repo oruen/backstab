@@ -12,6 +12,7 @@ websocket_init(_TransportName, Req, _Opts) ->
     {ok, Userinfo} = backstab_galaxy:user(Token),
     {_, Email} = lists:keyfind(<<"email">>, 1, Userinfo),
     gproc:reg({p, l, Email}),
+    gproc:reg({p, l, ws_client}),
     erlang:start_timer(0, self(), {global, init}),
     State = dict:store(battle, false, dict:store(player, Userinfo, dict:new())),
     {ok, Req, State}.
@@ -63,6 +64,8 @@ websocket_info(Info, Req, State) ->
     case Info of
         {defend, Email, Address} ->
             {reply, {binary, bert:encode({assault, Address})}, Req, State};
+        {planet_system, _PlanetSystem} ->
+            {reply, {binary, bert:encode(Info)}, Req, State};
         _ ->
             {ok, Req, State}
     end.

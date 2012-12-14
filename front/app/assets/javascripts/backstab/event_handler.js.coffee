@@ -68,3 +68,8 @@ backstab.EventHandler = (wsHandler) ->
     goog.dom.dataset.set button, "battleid", event.target.value
     $(".js-defendalert").removeClass("hide")
 
+  wsHandler.addEventListener backstab.WsHandler.EventType.PLANET_SYSTEM, (event) ->
+    planetSystem = new backstab.PlanetSystem(event.target)
+    backstab.updatePlanetSystem(planetSystem)
+
+
