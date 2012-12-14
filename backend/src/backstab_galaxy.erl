@@ -15,7 +15,7 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([maps/0, users/0, user/1, map/1]).
+-export([maps/0, users/0, user/1, map/1, capture_map/2]).
 
 %% ~~~~~~~~~~~~~~~~~~~~~~~~
 %% API Function Definitions
@@ -26,6 +26,9 @@ maps() ->
 
 map(Id) ->
     gen_server:call(server(), {map, Id}).
+
+capture_map(PlanetSystemId, UserId) ->
+    gen_server:cast(server(), {capture_map, PlanetSystemId, UserId}).
 
 users() ->
     gen_server:call(server(), users).
@@ -71,6 +74,7 @@ handle_call({map, Id}, _From, State) ->
             {error, not_found}
     end,
     {reply, Reply, State};
+
 handle_call(users, _From, State) ->
     Users = [ Info || {_, Info} <- dict:to_list(dict:fetch(users, State))],
     FilteredUsers = [lists:filter(fun({E,  _}) -> lists:member(E, [<<"email">>, <<"name">>, <<"color">>]) end, User) || User <- Users],
@@ -87,9 +91,22 @@ handle_call({user, Token}, _From, State) ->
 handle_call(_Request, _From, State) ->
     {noreply, ok, State}.
 
+handle_cast({capture_map, PlanetSystemId, UserId}, State) ->
+    Maps = dict:fetch(maps, State),
+    PlanetSystem = dict:fetch(PlanetSystemId, Maps),
+    PlanetSystem1 = PlanetSystem#planet_system{user_id = UserId},
+    State1 = dict:store(maps, dict:store(PlanetSystemId, PlanetSystem1, Maps), State),
+    erlang:start_timer(0, self(), {store_map, PlanetSystem1}),
+    {noreply, State1};
+
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
+handle_info({timeout, _Ref, {store_map, PlanetSystem}}, State) ->
+    Store = dict:fetch(riak, State),
+    Object = riakc_obj:new(<<"maps">>, PlanetSystem#planet_system.id, bert:encode(PlanetSystem)),
+    riakc_pb_socket:put(Store, Object),
+    {noreply, State};
 handle_info(_Info, State) ->
     {noreply, State}.
 

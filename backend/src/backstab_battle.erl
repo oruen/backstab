@@ -21,6 +21,7 @@ init({MapId, Userinfo, UserSocket}) ->
     digraph:add_vertex(Graph, Defender#planet.id, Defender#planet{quantity = ?PLAYER_START_POPULATION, user_id = PlanetSystem#planet_system.user_id}),
     digraph:add_vertex(Graph, Attacker#planet.id, Attacker#planet{quantity = ?PLAYER_START_POPULATION, user_id = Email}),
     State = [{map, Graph},
+             {map_id, MapId},
              {players, [[{user, Userinfo}, {socket, UserSocket}]]}],
     PopulatedPlanetSystem = PlanetSystem#planet_system{map = backstab_maps:to_front(Graph)},
     erlang:start_timer(100, UserSocket, {send, map, PopulatedPlanetSystem}),
@@ -132,9 +133,10 @@ handle_info({timeout, _Ref, check_victory}, State) ->
     FilteredIds = lists:filter(fun(E) -> E /= false end, lists:umerge(UserIds)),
     case erlang:length(FilteredIds) of
         1 ->
-            %{_, Players} = lists:keyfind(players, 1, State),
-            UserIdWin = lists:last(FilteredIds),
-            send_all({send, victory, UserIdWin}, State),
+            WinnerUserId = lists:last(FilteredIds),
+            {_, PlanetSystemId} = lists:keyfind(map_id, 1, State),
+            backstab_galaxy:capture_map(PlanetSystemId, WinnerUserId),
+            send_all({send, victory, WinnerUserId}, State),
             {stop, normal, State};
         _Else -> {noreply, State}
     end;
