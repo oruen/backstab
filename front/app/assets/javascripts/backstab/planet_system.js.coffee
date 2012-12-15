@@ -9,8 +9,9 @@ class backstab.PlanetSystem
 
   updateUserId: (val) ->
     @userId = val
+    $.extend(backstab.nodes.filter((e) => e.id == @id)[0], @visData())
     d3.select("svg").selectAll("circle").
-      data(backstab.planetSystems.map((e) -> e.visData())).
+      data(backstab.nodes).
       style("fill", (d, i) -> d.color).
       style("stroke", (d, i) -> (if d.userId is Userinfo.id then "#000" else d.color))
 

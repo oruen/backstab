@@ -80,11 +80,11 @@ backstab.renderGlobalMap = (planetSystems) ->
       x1 > nx2 or x2 < nx1 or y1 > ny2 or y2 < ny1
   width = 960
   height = 500
-  nodes = planetSystems.map((d) -> d.visData())
-  force = d3.layout.force().gravity(0.02).charge(-100).nodes(nodes).size([width, height])
+  backstab.nodes = planetSystems.map((d) -> d.visData())
+  force = d3.layout.force().gravity(0.02).charge(-100).nodes(backstab.nodes).size([width, height])
   force.start()
   svg = d3.select("body").append("svg").attr("width", width).attr("height", height).classed("global-map", true)
-  svg.selectAll("circle").data(nodes).enter().append("svg:circle").attr("r", (d) ->
+  svg.selectAll("circle").data(backstab.nodes).enter().append("svg:circle").attr("r", (d) ->
     d.radius
   ).style("fill", (d, i) ->
     d.color
@@ -107,10 +107,10 @@ backstab.renderGlobalMap = (planetSystems) ->
     $(".js-planetinfo").modal({keyboard: true})
   ).call force.drag
   force.on "tick", (e) ->
-    q = d3.geom.quadtree(nodes)
+    q = d3.geom.quadtree(backstab.nodes)
     i = 0
-    n = nodes.length
-    q.visit collide(nodes[i])  while ++i < n
+    n = backstab.nodes.length
+    q.visit collide(backstab.nodes[i])  while ++i < n
     svg.selectAll("circle").attr("cx", (d) ->
       d.x
     ).attr "cy", (d) ->
