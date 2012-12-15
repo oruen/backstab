@@ -6,7 +6,7 @@ backstab.EventHandler = (wsHandler) ->
     goog.style.showElement goog.dom.getElementByClass("global-map"), false
     backstab.initDirector()
     backstab.scene = new lime.Scene()
-    #scene.setRenderer(lime.Renderer.CANVAS);
+    backstab.scene.setRenderer(lime.Renderer.CANVAS)
     backstab.director.replaceScene backstab.scene
     planetSystem = new backstab.PlanetSystem(event.target)
     backstab.currentMap = new backstab.BattleMap(planetSystem, backstab.scene)
