@@ -29,6 +29,19 @@ class backstab.Planet
       circle.runAction new lime.animation.ColorTo(255, 150, 0).setDuration(.1)
     planet
 
+  @loadGraphics: ->
+    ['ourship', 'enemyship'].forEach (e) ->
+      i = new Image()
+      i.src = "/assets/#{e}.png"
+      backstab.Planet[e] = i
+  @getBase64Image: (img) ->
+    canvas = document.createElement("canvas")
+    canvas.width = img.width
+    canvas.height = img.height
+    ctx = canvas.getContext("2d")
+    ctx.drawImage(img, 0, 0)
+    canvas.toDataURL("image/png")
+
   setQuantity: (val) ->
     @quantity = val
     return unless @node
@@ -47,15 +60,20 @@ class backstab.Planet
   drawBase: ->
     # create planetbase
     color = undefined
+    fill = undefined
     if @userId == Userinfo.id
-      color = [121, 142, 224]
+      color = "#798ee0"
+      fill = backstab.Planet.getBase64Image(backstab.Planet.ourship)
     else
-      color = [201, 32, 32]
-    base = new lime.Sprite().setPosition(@node.getPosition()).setSize(70, 70).setFill(color[0], color[1], color[2])
-    handler = new lime.Sprite().setSize(base.getSize()).setFill(255, 0, 0).setOpacity(.01)
+      color = "#c92020"
+      fill = backstab.Planet.getBase64Image(backstab.Planet.enemyship)
+    base = new lime.Sprite().setPosition(@node.getPosition()).setSize(140, 140).setFill(fill)
+    handler = new lime.Sprite().setSize(base.getSize()).setFill(fill).setOpacity(.01)
+    counterBg = new lime.Circle().setSize(50, 50).setFill(color)
     text = new lime.Label().setFontSize(30).setText(@quantity)
-    base.appendChild handler
+    base.appendChild counterBg
     base.appendChild text
+    base.appendChild handler
     @baseNode = base
     # Drag army to another planet
     goog.events.listen handler, ["mousedown", "touchstart"], goog.bind((e) ->

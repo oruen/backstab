@@ -22,6 +22,7 @@ goog.require('goog.dom.dataset')
 
 # entrypoint
 backstab.start = ->
+  backstab.Planet.loadGraphics()
   attackButton = goog.dom.getElementByClass('js-attack')
   defendButton = goog.dom.getElementByClass('js-defend')
   goog.events.listen attackButton, goog.events.EventType.CLICK, ->
