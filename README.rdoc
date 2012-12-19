@@ -4,32 +4,31 @@ Backstab is a multiplayer online experimental game. It has an Erlang game engine
 
 == Installation
 
-1. Install Riak:
-    <tt>brew install riak</tt>
-Use Riak LevelDB backend (see: http://docs.basho.com/riak/1.2.0/tutorials/choosing-a-backend/LevelDB/)
+1. Install Riak and use LevelDB backend(see: http://docs.basho.com/riak/1.2.0/tutorials/choosing-a-backend/LevelDB/)
+    brew install riak
 
 2. Clone repository:
-    <tt>git clone https://github.com/oruen/backstab.git</tt>
+    git clone https://github.com/oruen/backstab.git
 
 3. Get submodles:
-    <tt>git submodule update --init</tt>
+    git submodule update --init
 
-3. Setup Rails app:
-    <tt>cd front && bundle install</tt>
+4. Setup Rails app:
+    cd front && bundle install
 
-4. Then go back and setup Erlang app:
-    <tt>cd backend && make all</tt>
+5. Then go back and setup Erlang app:
+    cd backend && make all
 
 == Running
 
 1. Run Riak:
-    <tt>riak start</tt>
+    riak start
 
 2. Start Erlang server:
-    <tt>cd backend && ./dev/start</tt>
+    cd backend && ./dev/start
 
 3. Start Rails app:
-    <tt>cd front && rails s</tt>
+    cd front && rails s
 
 == MIT License
 
