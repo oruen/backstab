@@ -1,7 +1,6 @@
 *.beam
 .eunit
 deps/*
-dev/sync
 ebin/
 rel/
 erl_crash.dump
