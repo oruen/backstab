@@ -1,0 +1,44 @@
+= Backstab
+
+Backstab is a multiplayer online experimental game. It has an Erlang game engine and Rails frontend serving assets and authorizing users.
+
+== Installation
+
+1. Install Riak:
+    <tt>brew install riak</tt>
+Use Riak LevelDB backend (see: http://docs.basho.com/riak/1.2.0/tutorials/choosing-a-backend/LevelDB/)
+
+2. Clone repository:
+    <tt>git clone https://github.com/oruen/backstab.git</tt>
+
+3. Get submodles:
+    <tt>git submodule update --init</tt>
+
+3. Setup Rails app:
+    <tt>cd front && bundle install</tt>
+
+4. Then go back and setup Erlang app:
+    <tt>cd backend && make all</tt>
+
+== Running
+
+1. Run Riak:
+    <tt>riak start</tt>
+
+2. Start Erlang server:
+    <tt>cd backend && ./dev/start</tt>
+
+3. Start Rails app:
+    <tt>cd front && rails s</tt>
+
+== MIT License
+
+Copyright © 2012 Nick Recobra
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
