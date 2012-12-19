@@ -15,7 +15,7 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([maps/0, users/0, user/1, map/1, capture_map/2]).
+-export([maps/0, users/0, user/1, map/1, capture_map/2, add_user/2, add_planet_system/2]).
 
 %% ~~~~~~~~~~~~~~~~~~~~~~~~
 %% API Function Definitions
@@ -38,6 +38,12 @@ user(Token) ->
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+
+add_user(Id, Userinfo) ->
+    gen_server:call(server(), {add_user, Id, Userinfo}).
+
+add_planet_system(Id, PlanetSystem) ->
+    gen_server:call(server(), {add_planet, Id, PlanetSystem}).
 
 %% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %% gen_server Function Definitions
@@ -88,6 +94,12 @@ handle_call({user, Token}, _From, State) ->
             {error, not_found}
     end,
     {reply, Reply, State};
+handle_call({add_user, Id, Userinfo}, _From, State) ->
+    State1 = dict:store(users, dict:store(Id, Userinfo, dict:fetch(users, State)), State),
+    {reply, ok, State1};
+handle_call({add_planet_system, Id, PlanetSystem}, _From, State) ->
+    State1 = dict:store(maps, dict:store(Id, PlanetSystem, dict:fetch(maps, State)), State),
+    {reply, ok, State1};
 handle_call(_Request, _From, State) ->
     {noreply, ok, State}.
 

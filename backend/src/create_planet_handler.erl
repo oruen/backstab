@@ -24,8 +24,10 @@ create(Req, State) ->
     {ok, Req2} = case riakc_pb_socket:get(RiakPid, <<"users">>, Token) of
         {ok, O} ->
             Player = jsx:decode(riakc_obj:get_value(O)),
+            ok = backstab_galaxy:add_user(Token, Player),
             {_, Email} = lists:keyfind(<<"email">>, 1, Player),
-            backstab_maps:store(backstab_maps:random(), Email, RiakPid),
+            {ok, PlanetSystem} = backstab_maps:store(backstab_maps:random(), Email, RiakPid),
+            ok = backstab_galaxy:add_planet_system(PlanetSystem#planet_system.id, PlanetSystem),
             cowboy_req:reply(201, [], <<"created">>, Req);
         {error, notfound} ->
             cowboy_req:reply(404, [], <<"not found">>, Req)
