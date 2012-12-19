@@ -30,6 +30,9 @@ Backstab is a multiplayer online experimental game. It has an Erlang game engine
 3. Start Rails app:
     cd front && rails s
 
+4. Open running up:
+    open http://localhost:3000
+
 == MIT License
 
 Copyright © 2012 Nick Recobra
