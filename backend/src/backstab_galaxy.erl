@@ -43,7 +43,7 @@ add_user(Id, Userinfo) ->
     gen_server:call(server(), {add_user, Id, Userinfo}).
 
 add_planet_system(Id, PlanetSystem) ->
-    gen_server:call(server(), {add_planet, Id, PlanetSystem}).
+    gen_server:call(server(), {add_planet_system, Id, PlanetSystem}).
 
 %% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %% gen_server Function Definitions
@@ -83,7 +83,7 @@ handle_call({map, Id}, _From, State) ->
 
 handle_call(users, _From, State) ->
     Users = [ Info || {_, Info} <- dict:to_list(dict:fetch(users, State))],
-    FilteredUsers = [lists:filter(fun({E,  _}) -> lists:member(E, [<<"email">>, <<"name">>, <<"color">>]) end, User) || User <- Users],
+    FilteredUsers = [to_client_player(User) || User <- Users],
     {reply, FilteredUsers, State};
 handle_call({user, Token}, _From, State) ->
     Users = dict:fetch(users, State),
@@ -95,9 +95,11 @@ handle_call({user, Token}, _From, State) ->
     end,
     {reply, Reply, State};
 handle_call({add_user, Id, Userinfo}, _From, State) ->
+    gproc:send({p, l, ws_client}, {player, to_client_player(Userinfo)}),
     State1 = dict:store(users, dict:store(Id, Userinfo, dict:fetch(users, State)), State),
     {reply, ok, State1};
 handle_call({add_planet_system, Id, PlanetSystem}, _From, State) ->
+    gproc:send({p, l, ws_client}, {planet_system, PlanetSystem}),
     State1 = dict:store(maps, dict:store(Id, PlanetSystem, dict:fetch(maps, State)), State),
     {reply, ok, State1};
 handle_call(_Request, _From, State) ->
@@ -135,3 +137,6 @@ code_change(_OldVsn, State, _Extra) ->
 
 server() ->
     gproc:lookup_local_name(galaxy).
+
+to_client_player(Userinfo) ->
+  lists:filter(fun({E,  _}) -> lists:member(E, [<<"email">>, <<"name">>, <<"color">>]) end, Userinfo).

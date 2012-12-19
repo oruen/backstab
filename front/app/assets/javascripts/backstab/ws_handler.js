@@ -20,7 +20,8 @@ backstab.WsHandler.EventType = {
   PLANET: goog.events.getUniqueId('planet'),
   VICTORY: goog.events.getUniqueId('victory'),
   ASSAULT: goog.events.getUniqueId('assault'),
-  PLANET_SYSTEM: goog.events.getUniqueId('planet_system')
+  PLANET_SYSTEM: goog.events.getUniqueId('planet_system'),
+  PLAYER: goog.events.getUniqueId('player')
 };
 
 backstab.WsHandler.prototype.onOpen = function() {

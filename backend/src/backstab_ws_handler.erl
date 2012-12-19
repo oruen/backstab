@@ -66,6 +66,8 @@ websocket_info(Info, Req, State) ->
             {reply, {binary, bert:encode({assault, Address})}, Req, State};
         {planet_system, _PlanetSystem} ->
             {reply, {binary, bert:encode(Info)}, Req, State};
+        {player, _Userinfo} ->
+            {reply, {binary, bert:encode(Info)}, Req, State};
         _ ->
             {ok, Req, State}
     end.

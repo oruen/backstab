@@ -54,12 +54,25 @@ backstab.requestDefence = (params) ->
 
 backstab.updatePlanetSystem = (planetSystem) ->
   existingPlanetSystem = @planetSystems.filter((e) -> e.id == planetSystem.id)[0]
-  existingPlanetSystem.updateUserId(planetSystem.userId)
+  if existingPlanetSystem
+    existingPlanetSystem.updateUserId(planetSystem.userId)
+  else
+    @planetSystems.push planetSystem
+    @nodes.push planetSystem.visData()
+    @doRenderGlobalMap()
+
+backstab.updatePlayer = (player) ->
+  backstab.players[player.id] = player
 
 backstab.send = (msg) ->
   @wsHandler.send msg
 
 backstab.renderGlobalMap = (planetSystems) ->
+  backstab.nodes = planetSystems.map((d) -> d.visData())
+  svg = d3.select("body").append("svg").attr("width", 960).attr("height", 500).classed("global-map", true)
+  backstab.doRenderGlobalMap()
+
+backstab.doRenderGlobalMap = () ->
   collide = (node) ->
     r = node.radius + 40
     nx1 = node.x - r
@@ -79,12 +92,11 @@ backstab.renderGlobalMap = (planetSystems) ->
           quad.point.x += x
           quad.point.y += y
       x1 > nx2 or x2 < nx1 or y1 > ny2 or y2 < ny1
-  width = 960
-  height = 500
-  backstab.nodes = planetSystems.map((d) -> d.visData())
+  svg = d3.select("svg")
+  width = parseInt svg.attr("width"), 10
+  height = parseInt svg.attr("height"), 10
   force = d3.layout.force().gravity(0.02).charge(-100).nodes(backstab.nodes).size([width, height])
   force.start()
-  svg = d3.select("body").append("svg").attr("width", width).attr("height", height).classed("global-map", true)
   svg.selectAll("circle").data(backstab.nodes).enter().append("svg:circle").attr("r", (d) ->
     d.radius
   ).style("fill", (d, i) ->

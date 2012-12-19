@@ -72,4 +72,8 @@ backstab.EventHandler = (wsHandler) ->
     planetSystem = new backstab.PlanetSystem(event.target)
     backstab.updatePlanetSystem(planetSystem)
 
+  wsHandler.addEventListener backstab.WsHandler.EventType.PLAYER, (event) ->
+    player = new backstab.Player(event.target)
+    backstab.updatePlayer(player)
+
 
