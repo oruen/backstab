@@ -1,5 +1,5 @@
 
-REBAR = rebar
+REBAR = ./rebar
 APP = backstab
 
 default: compile
