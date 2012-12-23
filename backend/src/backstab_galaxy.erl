@@ -22,35 +22,34 @@
 %% ~~~~~~~~~~~~~~~~~~~~~~~~
 
 maps() ->
-    gen_server:call(server(), maps).
+    gen_server:call(?SERVER, maps).
 
 map(Id) ->
-    gen_server:call(server(), {map, Id}).
+    gen_server:call(?SERVER, {map, Id}).
 
 capture_map(PlanetSystemId, UserId) ->
-    gen_server:cast(server(), {capture_map, PlanetSystemId, UserId}).
+    gen_server:cast(?SERVER, {capture_map, PlanetSystemId, UserId}).
 
 users() ->
-    gen_server:call(server(), users).
+    gen_server:call(?SERVER, users).
 
 user(Token) ->
-    gen_server:call(server(), {user, Token}).
+    gen_server:call(?SERVER, {user, Token}).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 add_user(Id, Userinfo) ->
-    gen_server:call(server(), {add_user, Id, Userinfo}).
+    gen_server:call(?SERVER, {add_user, Id, Userinfo}).
 
 add_planet_system(Id, PlanetSystem) ->
-    gen_server:call(server(), {add_planet_system, Id, PlanetSystem}).
+    gen_server:call(?SERVER, {add_planet_system, Id, PlanetSystem}).
 
 %% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %% gen_server Function Definitions
 %% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 init(_Args) ->
-    gproc:add_local_name(galaxy),
     {ok, RiakPid} = riakc_pb_socket:start_link("127.0.0.1", 8087),
     {ok, MapKeys} = riakc_pb_socket:list_keys(RiakPid, <<"maps">>),
     Maps = lists:foldl(fun(K, Acc) ->
@@ -134,9 +133,6 @@ code_change(_OldVsn, State, _Extra) ->
 %% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %% Internal Function Definitions
 %% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-server() ->
-    gproc:lookup_local_name(galaxy).
 
 to_client_player(Userinfo) ->
   lists:filter(fun({E,  _}) -> lists:member(E, [<<"email">>, <<"name">>, <<"color">>]) end, Userinfo).
